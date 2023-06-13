@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en" class="h-100">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+
+    <!-- Author: {% block page_author %}{{ main_metadata('author') }}{% endblock %} -->
+    <!-- Title: {% block page_title %}{{ title }}{% endblock %} -->
+    <!-- Description: {% block page_desc %}{{ main_metadata('desc') }}{% endblock %} -->
+    <!-- Image: {% block page_image %}{{ url_for('static', filename = 'img/baris.jpg') }}{% endblock %} -->
+    <!-- Locale: {% block page_locale %}{{ main_metadata('locale') }}{% endblock %} -->
+
+    <!-- Primary Meta Tags -->
+    <title> {{ self.page_title() }} - {{ self.page_author() }} </title>
+    <meta name="title" content="{{ self.page_title() }}" />
+    <meta name="author" content="{{ self.page_author() }}" />
+    <meta name="description" content="{{ self.page_desc() }}"/>
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="{{ self.page_author() }}" />
+    <meta property="og:title" content="{{ self.page_title() }}"/>
+    <meta property="og:description" content="{{ self.page_desc() }}" />
+    <meta property="og:locale" content="{{ self.page_locale() }}" />
+    <meta property="og:image" content="{{ self.page_image() }}" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary" />
+    <meta property="twitter:author" content="{{ self.page_author() }}" />
+    <meta property="twitter:title" content="{{ self.page_title() }}" />
+    <meta property="twitter:description" content="{{ self.page_desc() }}" />
+    <meta name="twitter:image:src" content="{{ self.page_image() }}"/>
+    <link href="{{ url_for('static', filename = 'css/main.min.css') }}" rel="stylesheet">
+</head>
+<body class="d-flex h-100 text-start bg-dark">
+    <div class="container py-5 mx-auto d-flex flex-column">
+        <main class="row m-5 fw-semibold">
+            <div class="col-12 col-lg-4 my-5 align-self-center">
+                <img src="{{ url_for('static', filename = 'img/baris.jpg') }}" class="rounded pp-img my-2" alt="PP">
+                <h1 class="d-inline-flex m-0 pb-2 border-bottom">{{ me.name }}</h1>
+                <div class="d-flex my-2">{% include 'icons/location_on_white_24dp.svg' %}{{ me.location }}</div>
+                <div class="d-flex my-2">{% include 'icons/email_white_24dp.svg' %}<a class="text-decoration-none" href="mailto:{{ me.email }}">{{ me.email }}</a></div>
+                <div class="d-flex flex-row my-3">
+                    <a class="me-4" href="https://github.com/metalun4/?utm_source=aydemir.website" target="_blank">{% include 'icons/github.svg' %}</a>
+                    <a class="me-4" href="https://twitter.com/metalun4/?utm_source=aydemir.website" target="_blank">{% include 'icons/twitter.svg' %}</a>
+                    <a class="me-4" href="https://linkedin.com/in/barisaydemir/?utm_source=aydemir.website" target="_blank">{% include 'icons/linkedin.svg' %}</a>
+                    <a class="me-4" href="{{ url_for('static', filename = 'BarisAydemirResumeMLE.pdf') }}" target="_blank">{% include 'icons/picture_as_pdf_white_36dp.svg' %}</a>
+                </div>
+            </div>
+            <div class="col-12 col-lg-8 border-start border-4">
+                <div class="flex-row m-2 m-lg-5">
+                  <h4 class="border-bottom">Summary</h4>
+                  <p class="ps-lg-4">{{ me.bio }}</p>
+                </div>
+                <div class="flex-row m-2 m-lg-5">
+                  <h4 class="border-bottom">Skills</h4>
+                  <ul class="list-group m-2 ps-lg-4">
+                      <li class="list-group-item"><span class="badge bg-success">Python</span></li>
+                      <li class="list-group-item"><span class="badge bg-warning">Jupyter</span><span class="badge bg-white text-dark">Pandas</span><span class="badge bg-success">Flask</span></li>
+                      <li class="list-group-item"><span class="badge bg-info">Tableau</span><span class="badge bg-primary">SQL</span></li>
+                      <li class="list-group-item"><span class="badge bg-danger">PyTorch</span><span class="badge bg-warning">TensorFlow</span></li>
+                      <li class="list-group-item"><span class="badge bg-primary">Google Cloud Platform</span></li>
+                  </ul>
+                </div>
+            </div>
+        </main>
+
+        <footer class="row mt-auto text-white-50 text-center">
+            <p>&copy; {{ year }} Baris Aydemir - Find the code on <a href="https://github.com/metalun4">GitHub</a></p>
+        </footer>
+    </div>
+</body>
+</html>
