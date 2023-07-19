@@ -11871,6 +11871,10 @@ svg {
   fill: ivory;
 }
 
+.bg-white {
+  background-color: ivory !important;
+}
+
 .list-group {
   background-color: inherit;
 }

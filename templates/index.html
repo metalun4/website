@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width" />
 
     <!-- Author: {% block page_author %}{{ main_metadata('author') }}{% endblock %} -->
-    <!-- Title: {% block page_title %}{{ title }}{% endblock %} -->
+    <!-- Title: {% block page_title %}{{ main_metadata('author') }} - Machine Learning Engineer {% endblock %} -->
     <!-- Description: {% block page_desc %}{{ main_metadata('desc') }}{% endblock %} -->
     <!-- Image: {% block page_image %}{{ url_for('static', filename = 'img/baris.jpg') }}{% endblock %} -->
     <!-- Locale: {% block page_locale %}{{ main_metadata('locale') }}{% endblock %} -->
 
     <!-- Primary Meta Tags -->
-    <title> {{ self.page_title() }} - {{ self.page_author() }} </title>
+    <title> {{ self.page_title() }} </title>
     <meta name="title" content="{{ self.page_title() }}" />
     <meta name="author" content="{{ self.page_author() }}" />
     <meta name="description" content="{{ self.page_desc() }}"/>
@@ -54,13 +54,17 @@
                 </div>
                 <div class="flex-row m-2 m-lg-5">
                   <h4 class="border-bottom">Skills</h4>
-                  <ul class="list-group m-2 ps-lg-4">
-                      <li class="list-group-item"><span class="badge bg-success">Python</span></li>
-                      <li class="list-group-item"><span class="badge bg-warning">Jupyter</span><span class="badge bg-white text-dark">Pandas</span><span class="badge bg-success">Flask</span></li>
-                      <li class="list-group-item"><span class="badge bg-info">Tableau</span><span class="badge bg-primary">SQL</span></li>
-                      <li class="list-group-item"><span class="badge bg-danger">PyTorch</span><span class="badge bg-warning">TensorFlow</span></li>
-                      <li class="list-group-item"><span class="badge bg-primary">Google Cloud Platform</span></li>
-                  </ul>
+                  <div class="m-2 ps-lg-4 text-center">
+                      <span class="badge bg-white text-dark">Python</span>
+                      <span class="badge bg-white text-dark">Jupyter</span>
+                      <span class="badge bg-white text-dark">Pandas</span>
+                      <span class="badge bg-white text-dark">Flask</span>
+                      <span class="badge bg-white text-dark">Tableau</span>
+                      <span class="badge bg-white text-dark">SQL</span>
+                      <span class="badge bg-white text-dark">PyTorch</span>
+                      <span class="badge bg-white text-dark">TensorFlow</span>
+                      <span class="badge bg-white text-dark">Google Cloud Platform</span>
+                  </div>
                 </div>
             </div>
         </main>
