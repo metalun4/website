@@ -9,11 +9,11 @@ export function Main(){
   const me = {
     "name": "Baris Aydemir",
     "email": "baris@aydemir.website",
-    "location": "Toronto, Ontario, Canada",
-    "bio": "An experienced Software Developer with a passion for building innovative solutions. " +
-        "My expertise includes web development, AI, and data management. " +
-        "Certified in TensorFlow, I specialize in integrating machine learning into practical applications, " +
-        "boosting efficiency and decision-making."
+    "location": "Izmir, Türkiye",
+    "bio": "An experienced Software Developer with a passion for building innovative solutions across web, mobile, " +
+      "and industrial automation. My expertise spans full-stack development using React, React Native, Node.js, and C#, " +
+      "complemented by strong DevOps skills with Docker and AWS. Certified in TensorFlow and experienced with PyTorch, " +
+      "I specialize in integrating machine learning into practical applications that optimize workflows and enhance decision-making."
   }
 
   return (
