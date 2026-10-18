@@ -1,6 +1,7 @@
 import Image from "next/image";
 import ppImage from "@/assets/baris.jpg";
-import {FileText, Github, Linkedin, Mail, MapPin, Twitter} from "lucide-react";
+import {FileText, Mail, MapPin} from "lucide-react";
+import {Github, Linkedin} from "@/components/social-icons";
 import Link from "next/link";
 
 export default function Home() {
@@ -11,47 +12,46 @@ export default function Home() {
 
   const socials = [
     {url: "https://github.com/metalun4/?utm_source=aydemir.website", icon: Github},
-    {url: "https://twitter.com/metalun4/?utm_source=aydemir.website", icon: Twitter},
     {url: "https://linkedin.com/in/barisaydemir/?utm_source=aydemir.website", icon: Linkedin},
     {url: "/BarisAydemirResumeWS.pdf", icon: FileText},
   ]
 
   return (
-    <div className="container flex flex-col min-h-screen mx-auto justify-between">
-      <main className="flex flex-col md:flex-row justify-center my-auto font-semibold p-3">
-        <div className="flex flex-col md:pr-24 py-12 justify-center items-center md:items-start md:text-start">
-          <Image className={"border border-black rounded-md mb-2 dark:border-0"} src={ppImage} alt={"Glorious picture"} placeholder={"blur"} height={164} width={164}/>
-          <div className="border-b pb-2 mb-2 text-nowrap">
-            <h1 className="text-4xl">Barış Aydemir</h1>
-            <p>Software Developer</p>
+    <div className="mx-auto flex min-h-screen max-w-7xl flex-col justify-between px-5 text-center sm:px-8">
+      <main className="my-auto flex flex-col justify-center py-10 md:flex-row md:py-20">
+        <div className="flex flex-col items-center justify-center py-8 md:items-start md:pr-16 md:text-start lg:pr-24">
+          <Image className="mb-6 rounded-xl border border-border" src={ppImage} alt="Barış Aydemir" placeholder="blur" height={164} width={164}/>
+          <div className="mb-5 border-b border-border pb-5">
+            <h1 className="text-[clamp(28px,3vw,36px)] font-semibold tracking-tight whitespace-nowrap">Barış Aydemir</h1>
+            <p className="mt-2 text-muted">Software Developer</p>
           </div>
-          <div className="flex flex-col gap-2">
-            <div className="flex"><MapPin /><p className="ml-2 font-light">Izmir, Türkiye</p></div>
-            <div className="flex"><Mail /><p className="ml-2 font-light">baris@aydemir.website</p></div>
-            <div className="flex gap-2 mt-2">
+          <div className="flex flex-col gap-3 text-sm text-muted">
+            <div className="flex items-center gap-3"><MapPin size={18} aria-hidden="true" /><p>Izmir, Türkiye</p></div>
+            <div className="flex items-center gap-3"><Mail size={18} aria-hidden="true" /><p>baris@aydemir.website</p></div>
+            <div className="mt-3 flex gap-2">
               {socials.map((social, index) => (
-                <Link key={index} href={social.url} target={"_blank"} className="hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black p-1 rounded-md"><social.icon size={36}/></Link>
+                <Link key={index} href={social.url} target="_blank" rel="noopener noreferrer" aria-label={["GitHub", "LinkedIn", "Resume"][index]} className="rounded-lg border border-border bg-surface p-2.5 text-muted transition-colors hover:bg-surface-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"><social.icon size={22}/></Link>
               ))}
             </div>
           </div>
         </div>
-        <div className="flex flex-col md:border-s-4 md:pl-16 gap-8 py-12 justify-center md:items-start md:text-start">
+        <div className="flex min-w-0 flex-col justify-center gap-10 py-8 md:items-start md:border-s md:border-border md:pl-12 md:text-start lg:pl-16">
           <div className="flex flex-col">
-            <h1 className="text-2xl border-b p-2">Summary</h1>
-            <p className="max-w-[78ch] px-6 py-2">An experienced Software Developer with a passion for building innovative solutions across web, mobile, and industrial automation. My expertise spans full-stack development using React, React Native, Node.js, and C#, complemented by strong DevOps skills with Docker and AWS. Certified in TensorFlow and experienced with PyTorch, I specialize in integrating machine learning into practical applications that optimize workflows and enhance decision-making.</p>
+            <h2 className="border-b border-border pb-3 text-xl font-medium tracking-tight">Summary</h2>
+            <p className="mt-5 max-w-[65ch] text-base leading-8 text-muted">An experienced Software Developer with a passion for building innovative solutions across web, mobile, and industrial automation. My expertise spans full-stack development using React, React Native, Node.js, and C#, complemented by strong DevOps skills with Docker and AWS. Certified in TensorFlow and experienced with PyTorch, I specialize in integrating machine learning into practical applications that optimize workflows and enhance decision-making.</p>
           </div>
           <div className="flex flex-col">
-            <h1 className="text-2xl border-b p-2">Skills</h1>
-            <div className="flex flex-wrap max-w-[78ch] justify-center gap-2 p-6 py-4">
+            <h2 className="border-b border-border pb-3 text-xl font-medium tracking-tight">Skills</h2>
+            <div className="mt-5 flex max-w-[65ch] flex-wrap justify-center gap-2 md:justify-start">
               {skills.map((skill, index) => (
-                <span key={index} className="p-1 rounded-md font-bold bg-black text-white dark:bg-white dark:text-black">{skill}</span>
+                <span key={index} className="rounded-md border border-border bg-surface px-3 py-1.5 text-sm font-medium text-muted">{skill}</span>
               ))}
             </div>
           </div>
         </div>
       </main>
-      <footer className="flex items-end justify-center pb-6">
-        <p className="text-gray-500 dark:text-gray-400">&copy; {currentYear} Baris Aydemir - Find the code on <a target="_blank" href="https://github.com/metalun4/website" className="border-b text-black dark:text-white">GitHub</a></p>
+      <footer className="flex justify-center pt-8 pb-6 text-xs leading-6 text-subtle">
+        <p>&copy; {currentYear} Baris Aydemir · Find the code on <a target="_blank" rel="noopener noreferrer" href="https://github.com/metalun4/website" className="rounded-sm underline decoration-border underline-offset-4 transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground">GitHub</a></p>
       </footer>
     </div>
   );

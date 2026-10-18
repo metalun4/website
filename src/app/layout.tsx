@@ -1,11 +1,11 @@
 import type {Metadata} from "next";
-import {Open_Sans} from "next/font/google";
+import {Geist} from "next/font/google";
 import "./globals.css";
 
-const openSans = Open_Sans({
-  variable: "--font-open-sans",
-  subsets: ["latin"],
-  style: "normal"
+const geist = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin", "latin-ext"],
+  display: "swap",
 });
 
 const metaInfo = {
@@ -44,7 +44,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${openSans.variable} text-center antialiased`}>
+      <body className={`${geist.variable} bg-background font-sans text-foreground antialiased selection:bg-foreground/15 selection:text-foreground`}>
         {children}
       </body>
     </html>
