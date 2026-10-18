@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { requireSession } from "@/lib/session";
 
 export const metadata: Metadata = {
   title: "AYT 2027 | Work In Progress",
@@ -7,7 +8,10 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function Ayt27() {
+export const dynamic = "force-dynamic";
+
+export default async function Ayt27() {
+  await requireSession();
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-5 text-center text-foreground">
       <p className="text-sm font-medium tracking-widest text-subtle">AYT 2027</p>

@@ -37,7 +37,7 @@ export async function login(_: ActionState, form: FormData): Promise<ActionState
       await createSession("viewer", record.id);
     }
   } catch { return { error: "Giriş yapılamadı. Veritabanı bağlantısını ve kurulumu kontrol edin." }; }
-  redirect("/yks27/tyt");
+  redirect("/yks27");
 }
 
 export async function logout() {

@@ -74,7 +74,7 @@ try {
     try { if ((await get("/yks27/login")).status === 200) break; } catch { /* server starting */ }
     await new Promise(resolve => setTimeout(resolve, 100));
   }
-  for (const path of ["/yks27/tyt", "/yks27/tyt/dashboard", "/yks27/admin"]) {
+  for (const path of ["/yks27", "/yks27/ayt", "/yks27/tyt", "/yks27/tyt/dashboard", "/yks27/admin"]) {
     const response = await get(path);
     assert.equal(response.status, 307);
     assert.equal(response.headers.get("location"), "/yks27/login");
@@ -87,7 +87,7 @@ try {
   credentials.set("mode", "admin"); credentials.set("email", "admin@example.test"); credentials.set("password", "test-password");
   const signedIn = await post("/yks27/login", credentials);
   assert.equal(signedIn.status, 303);
-  assert.equal(signedIn.headers.get("location"), "/yks27/tyt");
+  assert.equal(signedIn.headers.get("location"), "/yks27");
   const admin = cookieOf(signedIn);
   assert.ok(admin);
   assert.match(signedIn.headers.get("set-cookie"), /HttpOnly/i);
@@ -145,6 +145,11 @@ try {
   const viewerLogin = form(loginHtml, 'name="mode"'); viewerLogin.set("mode", "viewer"); viewerLogin.set("pin", pin);
   const viewer = cookieOf(await post("/yks27/login", viewerLogin));
   assert.ok(viewer);
+  for (const cookie of [admin, viewer]) {
+    assert.equal((await get("/yks27", cookie)).status, 200);
+    assert.equal((await get("/yks27/ayt", cookie)).status, 200);
+    assert.equal((await get("/yks27/login", cookie)).headers.get("location"), "/yks27");
+  }
   const listingResponse = await get("/yks27/tyt", viewer);
   assert.equal(listingResponse.status, 200);
   const listing = await listingResponse.text();
@@ -192,6 +197,9 @@ try {
   const expiredSession = tables.app_sessions.find(row => row.role === "viewer");
   const originalExpiry = expiredSession.expires_at;
   expiredSession.expires_at = "2000-01-01T00:00:00Z";
+  for (const path of ["/yks27", "/yks27/ayt"]) {
+    assert.equal((await get(path, viewer)).headers.get("location"), "/yks27/login");
+  }
   assert.equal((await get("/yks27/tyt", viewer)).headers.get("location"), "/yks27/login");
   assert.equal((await get("/yks27/tyt/dashboard", viewer)).headers.get("location"), "/yks27/login");
   expiredSession.expires_at = originalExpiry;
@@ -202,6 +210,9 @@ try {
   const revoke = form(adminHtml = await (await get("/yks27/admin", admin)).text(), `value="${tables.viewer_pins[0].id}"`);
   await post("/yks27/admin", revoke, admin);
   assert.equal(tables.viewer_pins[0].revoked, true);
+  for (const path of ["/yks27", "/yks27/ayt"]) {
+    assert.equal((await get(path, viewer)).headers.get("location"), "/yks27/login");
+  }
   assert.equal((await get("/yks27/tyt", viewer)).headers.get("location"), "/yks27/login");
   const remove = form(adminHtml, `value="${examId}"`);
   await post("/yks27/admin", remove, admin);

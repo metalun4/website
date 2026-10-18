@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 import { createPin, deleteExam, login, revokePin, saveExam, type ActionState } from "./actions";
 import { answerTotals, subjects, type Exam } from "./tyt/data";
 
-const inputClass = "mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:outline-2 focus:outline-foreground";
+const inputClass = "mt-1 block min-w-0 w-full max-w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:outline-2 focus:outline-foreground";
 const buttonClass = "rounded-lg border border-border bg-surface-emphasis px-4 py-2 font-medium hover:bg-surface-muted disabled:opacity-50";
 function Feedback({ state }: { state: ActionState }) {
   return <div aria-live="polite">{state.error && <p role="alert" className="my-3 text-red-600 dark:text-red-400">{state.error}</p>}{state.success && <p className="my-3">{state.success}</p>}</div>;
@@ -22,9 +22,9 @@ export function LoginForm() {
 
 export function ExamForm({ exam }: { exam?: Exam & { id: string } }) {
   const [state, action, pending] = useActionState(saveExam, {});
-  return <form action={action} className="space-y-5">
+  return <form action={action} className="min-w-0 space-y-5">
     {exam && <input type="hidden" name="id" value={exam.id} />}
-    <div className="grid gap-4 sm:grid-cols-2"><label>Deneme adı<input name="name" required maxLength={150} defaultValue={exam?.name} className={inputClass} /></label><label>Tarih<input name="date" type="date" required defaultValue={exam?.date} className={inputClass} /></label>{[{ key: "rank", label: "Sıralama" }, { key: "participants", label: "Katılımcı sayısı" }].map(f => <label key={f.key}>{f.label}<input name={f.key} type="number" min={1} max={10000000} step={1} defaultValue={exam?.[f.key as "rank" | "participants"] ?? ""} className={inputClass} /></label>)}</div>
+    <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 [&>label]:min-w-0"><label>Deneme adı<input name="name" required maxLength={150} defaultValue={exam?.name} className={inputClass} /></label><label>Tarih<input name="date" type="date" required defaultValue={exam?.date} className={inputClass} /></label>{[{ key: "rank", label: "Sıralama" }, { key: "participants", label: "Katılımcı sayısı" }].map(f => <label key={f.key}>{f.label}<input name={f.key} type="number" min={1} max={10000000} step={1} defaultValue={exam?.[f.key as "rank" | "participants"] ?? ""} className={inputClass} /></label>)}</div>
     <label className="block">PDF bağlantısı (isteğe bağlı)<input name="pdf_url" type="url" maxLength={2048} defaultValue={exam?.pdf_url ?? ""} placeholder="https://example.com/deneme.pdf" className={inputClass} /></label>
     <p className="text-xs text-muted">Net ve boş sayısı otomatik hesaplanır. Bilinmeyen sayıları boş bırakın.</p>
     {subjects.map((subject, i) => <SubjectFields key={subject.key} subject={subject} result={exam?.subjects[i]} />)}
@@ -42,9 +42,9 @@ function SubjectFields({ subject, result }: { subject: typeof subjects[number]; 
     { key: "correct", label: "Doğru", value: correct, set: setCorrect, other: incorrectCount },
     { key: "incorrect", label: "Yanlış", value: incorrect, set: setIncorrect, other: correctCount },
   ];
-  return <fieldset className="rounded-lg border border-border p-4">
+  return <fieldset className="min-w-0 rounded-lg border border-border p-3 sm:p-4">
     <legend className="px-2 font-medium">{subject.label} · {subject.questions} soru</legend>
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+    <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 [&>label]:min-w-0">
       {answerFields.map(field => <label key={field.key}>{field.label}<input name={`${subject.key}.${field.key}`} type="number" step={1} min={0} max={Math.max(0, subject.questions - (field.other ?? 0))} value={field.value} onChange={event => field.set(event.target.value)} className={inputClass} /></label>)}
       <label>Boş<input type="number" readOnly value={totals.empty ?? ""} className={`${inputClass} bg-surface-muted`} /></label>
       <label>Net<input type="number" readOnly value={totals.net ?? ""} className={`${inputClass} bg-surface-muted`} /></label>

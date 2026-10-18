@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowUpRight, BookOpen } from "lucide-react";
+import { requireSession } from "@/lib/session";
+import { AccountBar } from "./tyt/account-bar";
 
 export const metadata: Metadata = {
   title: "YKS 2027 | Gelişim Panelleri",
@@ -8,10 +10,14 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function Yks27() {
+export const dynamic = "force-dynamic";
+
+export default async function Yks27() {
+  const current = await requireSession();
   return (
     <main className="min-h-screen bg-background px-5 py-12 text-left text-foreground max-[520px]:px-3 max-[520px]:py-6" lang="tr">
       <div className="mx-auto max-w-7xl">
+        <AccountBar admin={current.role === "admin"} />
         <header className="mb-8">
           <div className="mb-6 flex items-center gap-[9px] text-xs font-semibold tracking-[1px] text-muted">
             <BookOpen size={18} aria-hidden="true" /> YKS 2027
