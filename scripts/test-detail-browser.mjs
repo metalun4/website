@@ -17,7 +17,7 @@ export async function testDetailBrowser({ origin, cookie, detailPath, cancelledP
     for (const width of [1280, 390, 320]) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto(origin + detailPath);
-      await page.locator('[data-question]').last().waitFor();
+      await page.locator('[data-question]').last().waitFor({ state: "attached" });
       assert.equal(await page.locator('[data-question]').count(), 120);
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `Page overflow at ${width}px`);
       for (const [label, count] of [["Doğru", expected.exam.total_correct], ["Yanlış", expected.exam.total_wrong], ["Boş", expected.exam.total_blank], ["İptal", 0], ["Tümü", 120]]) {
@@ -29,11 +29,11 @@ export async function testDetailBrowser({ origin, cookie, detailPath, cancelledP
       }
       await page.getByRole("link", { name: "Geometri (10)", exact: true }).click();
       assert.equal(new URL(page.url()).hash, "#questions-tyt_geometry");
-      if (width < 740) {
+      await page.locator('#questions-tyt_geometry > summary').click();
+      if (width < 768) {
         const region = page.getByRole("region", { name: "Geometri konu analizi", exact: true });
         await region.focus();
-        await page.keyboard.press("ArrowRight");
-        await page.waitForFunction(() => document.querySelector('#questions-tyt_geometry [role=region]').scrollLeft > 0);
+        assert.ok(await region.evaluate(element => element.scrollWidth <= element.clientWidth), "Mobile question cards do not require horizontal scrolling");
       }
     }
     await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
@@ -47,8 +47,8 @@ export async function testDetailBrowser({ origin, cookie, detailPath, cancelledP
     await page.getByRole("heading", { name: "Deneme raporu yüklenemedi" }).waitFor();
     setFailure(false);
     await page.getByRole("button", { name: "Tekrar dene" }).click();
-    await page.locator('[data-question]').last().waitFor();
+    await page.locator('[data-question]').last().waitFor({ state: "attached" });
     assert.equal(await page.locator('[data-question]').count(), 120);
-    console.log("PASS: browser desktop/390px/320px, keyboard filters and subject navigation, table scrolling, no page overflow or hydration errors, dark mode cancellation filter, error recovery.");
+    console.log("PASS: browser desktop/390px/320px, keyboard filters and subject navigation, mobile question cards, no page overflow or hydration errors, dark mode cancellation filter, error recovery.");
   } finally { setFailure(false); await browser.close(); }
 }

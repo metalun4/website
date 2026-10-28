@@ -4,6 +4,7 @@ import { createHmac, randomBytes } from "node:crypto";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { configured, db } from "./storage";
+import { loginHref } from "./yks-navigation";
 
 type Session = { token_hash: string; role: "admin" | "viewer"; pin_id: string | null; expires_at: string };
 export type ViewerPin = { id: string; label: string; expires_at: string; revoked: boolean; created_at: string };
@@ -31,14 +32,14 @@ export async function readSession() {
   return record;
 }
 
-export async function requireSession() {
+export async function requireSession(returnTo = "/yks27") {
   const current = await session();
-  if (!current) redirect("/yks27/login");
+  if (!current) redirect(loginHref(returnTo));
   return current;
 }
 
 export async function requireAdmin() {
-  const current = await requireSession();
+  const current = await requireSession("/yks27/admin");
   if (current.role !== "admin") redirect("/yks27/tyt");
   return current;
 }

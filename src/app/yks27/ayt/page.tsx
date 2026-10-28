@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function Ayt27() {
-  const current = await requireSession();
+  const current = await requireSession("/yks27/ayt");
   return (
     <main className="min-h-screen bg-background px-5 py-10 text-foreground"><div className="mx-auto max-w-7xl"><AccountBar admin={current.role === "admin"} /><section className="rounded-2xl border border-border bg-surface px-6 py-16 text-center">
       <p className="text-sm font-medium tracking-widest text-subtle">AYT 2027</p>

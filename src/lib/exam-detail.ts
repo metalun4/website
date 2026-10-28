@@ -11,17 +11,23 @@ export type ExamDetail = Pick<ExamInfo, "name" | "exam_date" | "institution_name
   id: string; exam_subject_results: DetailResult[]; exam_rankings: Ranking[]; exam_questions: DetailQuestion[];
 };
 export const rankingLabels = { general: "Genel", institution: "Kurum", branch: "Şube", class: "Sınıf" } as const;
-export const statusLabels = { all: "Tümü", correct: "Doğru", incorrect: "Yanlış", blank: "Boş", cancelled: "İptal" } as const;
+export const statusLabels = { all: "Tümü", review: "Yanlış ve boş", correct: "Doğru", incorrect: "Yanlış", blank: "Boş", cancelled: "İptal" } as const;
 export type QuestionFilter = keyof typeof statusLabels;
 
-export function questionStatus(question: Pick<DetailQuestion, "correct_answer" | "selected_answer">): Exclude<QuestionFilter, "all"> {
+export function questionStatus(question: Pick<DetailQuestion, "correct_answer" | "selected_answer">): Exclude<QuestionFilter, "all" | "review"> {
   if (question.correct_answer === "İPTAL") return "cancelled";
   if (question.selected_answer === null) return "blank";
   return question.correct_answer === question.selected_answer ? "correct" : "incorrect";
 }
 export function filterQuestions(questions: DetailQuestion[], filter: QuestionFilter) {
-  return filter === "all" ? questions : questions.filter(question => questionStatus(question) === filter);
+  return filter === "all" ? questions : questions.filter(question => {
+    const status = questionStatus(question);
+    return filter === "review" ? status === "incorrect" || status === "blank" : status === filter;
+  });
 }
+
+export type QuestionGroup = { subject: DetailSubject; questions: DetailQuestion[] };
+
 export function groupResults(results: DetailResult[]) {
   return ["tyt_turkish", "tyt_social", "tyt_math", "tyt_science"].map(id => {
     const rows = results.filter(row => row.subject_id === id || row.subject.parent_id === id)

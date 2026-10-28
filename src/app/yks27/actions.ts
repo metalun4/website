@@ -5,8 +5,9 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { allowLogin, createSession, destroySession, hash, requireAdmin } from "@/lib/session";
 import { db, configured, supabase } from "@/lib/storage";
+import { safeReturnTo } from "@/lib/yks-navigation";
 
-export type ActionState = { error?: string; success?: string; pin?: string };
+export type ActionState = { error?: string; success?: string; pin?: string; expiresAt?: string; field?: "pin" | "password" };
 const errorText = (error: unknown) => error instanceof Error ? error.message : "İşlem başarısız.";
 const uuid = (value: FormDataEntryValue | null) => {
   const id = String(value ?? "");
@@ -21,22 +22,22 @@ export async function login(_: ActionState, form: FormData): Promise<ActionState
     if (form.get("mode") === "admin") {
       const email = String(form.get("email") ?? "").trim();
       const password = String(form.get("password") ?? "");
-      if (!email || email.length > 254 || !password || password.length > 1024) return { error: "Giriş bilgileri geçersiz." };
+      if (!email || email.length > 254 || !password || password.length > 1024) return { error: "E-posta adresini ve şifreni kontrol et.", field: "password" };
       let user: { user: { id: string } };
       try {
         user = await supabase("/auth/v1/token?grant_type=password", { method: "POST", body: JSON.stringify({ email, password }) });
-      } catch { return { error: "Giriş bilgileri geçersiz." }; }
-      if (user.user.id !== process.env.ADMIN_USER_ID) return { error: "Giriş bilgileri geçersiz." };
+      } catch { return { error: "E-posta adresini ve şifreni kontrol et.", field: "password" }; }
+      if (user.user.id !== process.env.ADMIN_USER_ID) return { error: "E-posta adresini ve şifreni kontrol et.", field: "password" };
       await createSession("admin");
     } else {
       const pin = String(form.get("pin") ?? "").trim();
-      if (!/^\d{10}$/.test(pin)) return { error: "PIN geçersiz veya süresi dolmuş." };
+      if (!/^\d{10}$/.test(pin)) return { error: "10 haneli PIN’i kontrol et. Erişim süresi dolduysa yöneticiden yeni PIN iste.", field: "pin" };
       const [record] = await db<{ id: string }[]>(`viewer_pins?pin_hash=eq.${hash(`pin:${pin}`)}&revoked=eq.false&expires_at=gt.${encodeURIComponent(new Date().toISOString())}&select=id&limit=1`);
-      if (!record) return { error: "PIN geçersiz veya süresi dolmuş." };
+      if (!record) return { error: "PIN geçersiz veya süresi dolmuş. PIN’i kontrol et veya yöneticiden yenisini iste.", field: "pin" };
       await createSession("viewer", record.id);
     }
   } catch { return { error: "Giriş yapılamadı. Veritabanı bağlantısını ve kurulumu kontrol edin." }; }
-  redirect("/yks27");
+  redirect(safeReturnTo(form.get("returnTo")));
 }
 
 export async function logout() {
@@ -61,9 +62,10 @@ export async function createPin(_: ActionState, form: FormData): Promise<ActionS
     const days = Number(form.get("days"));
     if (!label || label.length > 100 || !Number.isInteger(days) || days < 1 || days > 365) throw new Error("Ad ve 1–365 gün arasında süre girin.");
     const pin = Array.from({ length: 10 }, () => randomInt(10)).join("");
-    await db("viewer_pins", { method: "POST", body: JSON.stringify({ label, pin_hash: hash(`pin:${pin}`), expires_at: new Date(Date.now() + days * 86400000).toISOString() }) });
+    const expiresAt = new Date(Date.now() + days * 86400000).toISOString();
+    await db("viewer_pins", { method: "POST", body: JSON.stringify({ label, pin_hash: hash(`pin:${pin}`), expires_at: expiresAt }) });
     revalidatePath("/yks27/admin");
-    return { pin, success: "PIN yalnızca şimdi gösterilir. Kopyalayıp paylaşın." };
+    return { pin, expiresAt, success: "PIN yalnızca şimdi gösterilir. Sayfadan ayrılmadan önce kopyalayıp paylaşın." };
   } catch (error) { return { error: errorText(error) }; }
 }
 

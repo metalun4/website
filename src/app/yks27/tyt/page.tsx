@@ -1,60 +1,57 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BookOpen, ChartNoAxesCombined } from "lucide-react";
 import { requireSession } from "@/lib/session";
 import { getExams } from "@/lib/exams";
+import { queryValue, type Query } from "@/lib/yks-navigation";
 import { AccountBar } from "./account-bar";
-import { calculateExam, dateLabel, number, subjects } from "./data";
+import { SubjectResults } from "./subject-results";
+import { calculateExam, dateLabel, number } from "./data";
 
 export const metadata: Metadata = {
   title: "TYT Denemeleri | YKS 2027",
-  description: "TYT denemelerinin ders bazında ve toplam doğru, yanlış, boş ve net sonuçları.",
+  description: "TYT denemelerinin ders bazında sonuçları ve gelişimi.",
   robots: { index: false, follow: false },
 };
 export const dynamic = "force-dynamic";
 
-export default async function Tyt() {
-  const current = await requireSession();
-  const exams = (await getExams()).slice().reverse().map(exam => ({ ...calculateExam(exam), id: exam.id }));
-  const numericCell = "px-3 py-3 text-right tabular-nums sm:px-5";
-
-  return <main className="min-h-screen bg-background px-3 py-6 text-left text-sm text-foreground sm:px-5 sm:py-10" lang="tr">
-    <div className="mx-auto max-w-7xl">
-      <AccountBar admin={current.role === "admin"} />
-      <header className="mb-8">
-        <Link href="/yks27" className="text-muted hover:underline">← YKS 2027</Link>
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-5">
-          <div>
-            <div className="mb-3 flex items-center gap-2 text-xs font-medium tracking-wider text-muted"><BookOpen size={17} aria-hidden="true" /> TYT 2027</div>
-            <h1 id="yks-content" tabIndex={-1} className="text-3xl font-semibold tracking-tight">TYT Denemeleri<span className="text-subtle">.</span></h1>
-            <p className="mt-3 text-muted">{exams.length} deneme · En yeniden eskiye</p>
-          </div>
-          <Link href="/yks27/tyt/dashboard" className="inline-flex items-center gap-2 rounded-lg bg-foreground px-5 py-3 font-medium text-background transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"><ChartNoAxesCombined size={18} aria-hidden="true" /> Gelişim paneli</Link>
-        </div>
-      </header>
-
-      {!exams.length && <section className="rounded-xl border border-border bg-surface p-6"><h2 className="text-lg font-semibold">Henüz deneme kaydı yok</h2>{current.role === "admin" && <Link href="/yks27/admin" className="mt-3 inline-block underline">İlk denemeyi ekle</Link>}</section>}
-
-      <p className="mb-4 text-xs leading-6 text-muted sm:hidden">Tüm sütunları görmek için tabloyu yana kaydır. Net = doğru − yanlış / 4.</p><div className="space-y-6">{exams.map(exam => <article key={exam.id} aria-labelledby={`exam-${exam.id}`} className="overflow-hidden rounded-xl border border-border bg-surface">
-        <header className="flex flex-wrap items-center justify-between gap-4 border-b border-border px-4 py-5 sm:px-6">
-          <div className="min-w-0"><h2 id={`exam-${exam.id}`} className="break-words text-lg font-semibold"><Link href={`/yks27/tyt/${exam.id}`} prefetch={false} className="hover:underline">{exam.name}</Link></h2><p className="mt-2 text-xs text-muted">{dateLabel(exam.date)}{(exam.rank !== null || exam.participants !== null) && <> · Sıralama: {number(exam.rank, 0)} / {number(exam.participants, 0)}</>}</p></div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Link href={`/yks27/tyt/${exam.id}`} prefetch={false} aria-label={`${exam.name}: Detayları Gör`} className="inline-flex items-center rounded-lg border border-border px-3 py-2 text-xs text-accent hover:bg-surface-muted">Detayları Gör</Link>
-            {current.role === "admin" && <Link href={`/yks27/admin?edit=${exam.id}`} className="inline-flex items-center justify-center rounded-lg border border-border px-3 py-2 text-center text-xs hover:bg-surface-muted">Düzenle</Link>}
-          </div>
+export default async function Tyt({ searchParams }: { searchParams: Promise<Query> }) {
+  const query = await searchParams;
+  const q = queryValue(query.q).trim().slice(0, 100);
+  const date = (value: Query[string]) => /^\d{4}-\d{2}-\d{2}$/.test(queryValue(value)) ? queryValue(value) : "";
+  const from = date(query.from), to = date(query.to);
+  const search = new URLSearchParams();
+  if (q) search.set("q", q);
+  if (from) search.set("from", from);
+  if (to) search.set("to", to);
+  const current = await requireSession("/yks27/tyt" + (search.size ? `?${search}` : ""));
+  const all = (await getExams()).toReversed().map(exam => ({ ...calculateExam(exam), id: exam.id }));
+  const exams = all.filter(exam => (!q || exam.name.toLocaleLowerCase("tr-TR").includes(q.toLocaleLowerCase("tr-TR"))) && (!from || exam.date >= from) && (!to || exam.date <= to));
+  const filtered = Boolean(q || from || to);
+  return <main className="yks-page"><div className="mx-auto max-w-7xl">
+    <AccountBar admin={current.role === "admin"} />
+    <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
+      <div><h1 id="yks-content" tabIndex={-1} className="text-3xl font-semibold tracking-tight">TYT denemeleri</h1><p className="mt-2 text-muted">{all.length} deneme · En yeniden eskiye</p></div>
+      <Link href="/yks27/tyt/dashboard" className="yks-button yks-button-primary">Gelişim paneli</Link>
+    </header>
+    {all.length > 0 && <form action="/yks27/tyt" className="yks-panel mb-6 grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2">
+      <label className="block">Deneme ara<input type="search" name="q" autoComplete="off" defaultValue={q} maxLength={100} placeholder="Örn. ÖZDEBİR…" className="yks-input mt-1" /></label>
+      <button className="yks-button mt-6 self-start">Filtrele</button>
+      <details open={Boolean(from || to)} className="col-span-full"><summary className="inline-flex min-h-11 items-center text-sm text-muted">Tarih aralığı{from || to ? " · Filtre etkin" : " (isteğe bağlı)"}</summary><div className="mb-3 grid gap-3 sm:grid-cols-2">
+        <label className="block">Başlangıç tarihi<input type="date" name="from" defaultValue={from} max={to || undefined} className="yks-input mt-1" /></label>
+        <label className="block">Bitiş tarihi<input type="date" name="to" defaultValue={to} min={from || undefined} className="yks-input mt-1" /></label>
+      </div></details>
+      {filtered && <Link href="/yks27/tyt" className="col-span-full inline-flex items-center text-accent hover:underline">Filtreleri temizle</Link>}
+    </form>}
+    {!all.length ? <section className="yks-panel"><h2 className="text-lg font-semibold">Henüz deneme kaydı yok</h2><p className="mt-2 text-muted">{current.role === "admin" ? "İlk deneme raporunu PDF olarak ekleyebilirsin." : "Yönetici bir deneme eklediğinde sonuçlar burada görünecek."}</p>{current.role === "admin" && <Link href="/yks27/admin" className="yks-button mt-4">İlk denemeyi ekle</Link>}</section> : <>
+      {filtered && <p role="status" className="mb-4 text-muted">{exams.length} / {all.length} deneme gösteriliyor</p>}
+      {!exams.length && <section className="yks-panel"><h2 className="font-semibold">Bu filtrelere uygun deneme yok</h2><p className="mt-2 text-muted">Deneme adını veya tarih aralığını değiştir.</p><Link href="/yks27/tyt" className="yks-button mt-4">Tüm denemeleri göster</Link></section>}
+      <div className="space-y-4">{exams.map(exam => <article key={exam.id} aria-labelledby={`exam-${exam.id}`} className="yks-exam-card min-w-0 rounded-xl border border-border bg-surface">
+        <header className="grid gap-4 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:p-5">
+          <div className="min-w-0"><h2 id={`exam-${exam.id}`} className="break-words text-base font-semibold"><Link href={`/yks27/tyt/${exam.id}`} prefetch={false} className="hover:text-accent hover:underline">{exam.name}</Link></h2><p className="mt-2 text-xs leading-6 text-muted"><time dateTime={exam.date}>{dateLabel(exam.date)}</time>{exam.rank !== null && <> · Sıralama: {number(exam.rank, 0)} / {number(exam.participants, 0)}</>}</p></div>
+          <div className="flex items-center justify-between gap-4 sm:justify-end"><p className="shrink-0 text-accent"><strong className="text-2xl font-semibold tabular-nums">{number(exam.net)}</strong><span className="ml-1 text-xs">net</span></p><Link href={`/yks27/tyt/${exam.id}`} prefetch={false} aria-label={`${exam.name}: Raporu incele`} className="yks-button">Raporu incele</Link></div>
         </header>
-        <div className="overflow-x-auto" role="region" aria-label={`${exam.name} sonuçları`} tabIndex={0}>
-          <table className="w-full min-w-[620px] text-sm">
-            <caption className="sr-only">{exam.name} ders sonuçları ve genel toplam</caption>
-            <thead className="bg-surface-muted text-xs text-muted"><tr><th scope="col" className="yks-row-label px-4 py-3 text-left font-medium sm:px-6">Ders</th>{["Soru", "Doğru", "Yanlış", "Boş", "Net", "Ortalama"].map(label => <th scope="col" key={label} className={`${numericCell} font-medium`}>{label}</th>)}</tr></thead>
-            <tbody className="divide-y divide-border">{subjects.map((subject, i) => {
-              const result = exam.subjects[i];
-              return <tr key={subject.key}><th scope="row" className="px-4 py-3 text-left font-medium sm:px-6">{subject.label}</th><td className={numericCell}>{subject.questions}</td><td className={numericCell}>{number(result.correct, 0)}</td><td className={numericCell}>{number(result.incorrect, 0)}</td><td className={numericCell}>{number(result.empty, 0)}</td><td className={`${numericCell} font-semibold text-accent`}>{number(result.net)}</td><td className={`${numericCell} text-muted`}>{number(result.average)}</td></tr>;
-            })}</tbody>
-            <tfoot className="border-t border-border bg-surface-emphasis font-semibold"><tr><th scope="row" className="px-4 py-4 text-left sm:px-6">Toplam</th><td className={numericCell}>120</td><td className={numericCell}>{number(exam.correct, 0)}</td><td className={numericCell}>{number(exam.incorrect, 0)}</td><td className={numericCell}>{number(exam.empty, 0)}</td><td className={`${numericCell} text-accent`}>{number(exam.net)}</td><td className={numericCell}>{number(exam.average)}</td></tr></tfoot>
-          </table>
-        </div>
+        <details className="border-t border-border"><summary className="flex min-h-11 items-center px-4 py-3 text-sm font-medium text-accent sm:px-5">Ders sonuçları</summary><SubjectResults exam={exam} /><p className="border-t border-border px-4 py-3 text-xs text-muted">Net = doğru − yanlış / 4.</p></details>
       </article>)}</div>
-    </div>
-  </main>;
+    </>}
+  </div></main>;
 }

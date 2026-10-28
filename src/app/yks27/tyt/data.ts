@@ -9,6 +9,7 @@ export const subjects = [
 
 type SubjectResult = { average: number | null; correct: number | null; incorrect: number | null };
 export type Exam = {
+  score?: number | null;
   date: string;
   name: string;
   rank: number | null;
@@ -77,4 +78,5 @@ export function number(value: number | null, decimals = 2, signed = false) {
     signDisplay: signed ? "exceptZero" : "auto",
   }).format(value);
 }
-export const dateLabel = (date: string) => date.split("-").reverse().join(".");
+const dateFormatter = new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "UTC" });
+export const dateLabel = (date: string) => dateFormatter.format(new Date(`${date}T00:00:00Z`));

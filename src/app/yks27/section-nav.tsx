@@ -13,6 +13,9 @@ export function SectionNav({ admin }: { admin: boolean }) {
     ...(admin ? [{ href: "/yks27/admin", label: "Yönetim" }] : []),
   ];
   return <nav aria-label="YKS sayfaları" className="yks-navigation">
-    {links.map(link => <Link key={link.href} href={link.href} aria-current={pathname === link.href ? "page" : undefined}>{link.label}</Link>)}
+    {links.map(link => {
+      const detail = link.href === "/yks27/tyt" && pathname.startsWith("/yks27/tyt/") && pathname !== "/yks27/tyt/dashboard";
+      return <Link key={link.href} href={link.href} aria-current={pathname === link.href ? "page" : detail ? "location" : undefined}>{link.label}</Link>;
+    })}
   </nav>;
 }
