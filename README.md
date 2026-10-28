@@ -5,5 +5,4 @@ TYT PDF importing, database setup, limitations and development checks: [import g
 ### Todo:
 
 ~~1.Transform to Next.js~~  
-2.Add project showcase.  
-3.Add animations.
+~~2.Add project showcase.~~
