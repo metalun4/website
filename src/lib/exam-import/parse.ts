@@ -115,14 +115,17 @@ export function parsePdf(pdf: ExtractedPdf): ParsedExam {
       const s = SUBJECTS.find(s => s.count > 0 && fold(s.name) === label);
       if (s) { subject = s.id; continue; }
       const leftText = joined(row.boxes.filter(b => b.x + b.width / 2 < dcLeft));
-      const m = leftText.match(/^(\d{1,2})\s+(.+)$/);
+      // Some reports replace the entire row with a centered cancellation label.
+      // Only an explicit marker qualifies; a missing answer key is an error.
+      const cancelled = /^(\d{1,2})\s+iptal$/.test(label);
+      const m = (cancelled ? row.text : leftText).match(/^(\d{1,2})\s+(.+)$/);
       if (!m || !subject) fail("Soru satırı veya ders başlığı güvenilir şekilde okunamadı.");
       const values = cells({ ...row, boxes: row.boxes.filter(b => b.x + b.width / 2 >= dcLeft) }, [dc, oc, so, solution]);
-      if (/iptal/.test(fold(m[2])) || !/^[A-E]$/.test(values[0])) throw new ImportError("CANCELLED", `${SUBJECTS.find(s => s.id === subject)?.name} ${m[1]}: cevap anahtarı yok veya soru iptal edilmiş. Bu rapor mevcut veri yapısıyla kaydedilemez.`);
+      if (!cancelled && !/^[A-E]$/.test(values[0])) fail(`${SUBJECTS.find(s => s.id === subject)?.name} ${m[1]}: cevap anahtarı eksik veya geçersiz.`);
       if (values[1] && !/^[A-E]$/.test(values[1])) fail("Öğrenci cevabı okunamadı.");
-      const correct = values[0] as ParsedQuestion["correct_answer"], selected = (values[1] || null) as ParsedQuestion["selected_answer"];
+      const correct = (cancelled ? "İPTAL" : values[0]) as ParsedQuestion["correct_answer"], selected = (values[1] || null) as ParsedQuestion["selected_answer"];
       const expectedStatus = selected === null ? "" : selected === correct ? "+" : "-";
-      if (values[2].replace(/−/g, "-") !== expectedStatus) fail("Soru cevabı ile raporun doğru/yanlış işareti uyuşmuyor.");
+      if (!cancelled && values[2].replace(/−/g, "-") !== expectedStatus) fail("Soru cevabı ile raporun doğru/yanlış işareti uyuşmuyor.");
       const matches = second.links.filter(a => a.x + a.width / 2 > (so + solution) / 2 && a.x + a.width / 2 < right && Math.abs(a.y + a.height / 2 - (row.y - Math.max(...row.boxes.map(b => b.height)) / 2)) < 5);
       if (matches.length > 1) fail("Bir soruya birden fazla çözüm bağlantısı denk geliyor.");
       questions.push({ question_number: Number(m[1]), subject_id: subject, topic_label: m[2].trim(), correct_answer: correct, selected_answer: selected, solution_url: matches[0]?.url ?? null });
@@ -136,6 +139,7 @@ export function parsePdf(pdf: ExtractedPdf): ParsedExam {
   const mapped = questions.filter(q => q.solution_url).length;
   if (mapped !== second.links.length) fail("Çözüm bağlantılarının tümü tek bir soru satırıyla eşleştirilemedi.");
   if (!mapped) report.warnings.push("Bu PDF çözüm bağlantısı içermiyor.");
+  for (const q of questions.filter(q => q.correct_answer === "İPTAL")) report.warnings.push(`${SUBJECTS.find(s => s.id === q.subject_id)?.name} ${q.question_number}: İPTAL (rapor toplamlarında doğru kabul edilmiştir).`);
   validateExam(report);
   return report;
 }

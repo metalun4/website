@@ -26,6 +26,13 @@ test("PostgreSQL schema, six real imports, exact persistence, permissions, dupli
       assert.deepEqual(rows.rows.map(r=>r.data), [...g.subjects].sort((a,b)=>(a.subject_id+":"+a.result_scope).localeCompare(b.subject_id+":"+b.result_scope)));
     }
     assert.equal(await count("exams"), 6); assert.equal(await count("exam_questions"), 720); assert.equal(await count("exam_subject_results"), 78); assert.equal(await count("exam_rankings"), 24); assert.equal(await count("subjects"), 12);
+    const cancelled = await fixtureReport("5ade3e51cd986a20854fff3770ec091034061db5.pdf");
+    const cancelledResult = await call(cancelled);
+    assert.equal(cancelledResult.status,"imported");
+    const cancelledRows = await db.query<{question_number:number;correct_answer:string;selected_answer:null}>("select question_number,correct_answer,selected_answer from public.exam_questions where exam_id=$1 and correct_answer='İPTAL' order by question_number",[cancelledResult.exam_id]);
+    assert.deepEqual(cancelledRows.rows,[{question_number:17,correct_answer:"İPTAL",selected_answer:null},{question_number:25,correct_answer:"İPTAL",selected_answer:null}]);
+    assert.equal((await call(cancelled)).status,"duplicate");
+    await db.query("delete from public.exams where id=$1",[cancelledResult.exam_id]);
     const topicsBefore = await count("topics");
     const repeated = await Promise.all([call(first),call(first)]);
     assert.ok(repeated.every(r => r.status === "duplicate"));
@@ -75,13 +82,17 @@ test("authorized legacy reset migration preserves PINs and active sessions", asy
     await db.exec("create table public.exams(id uuid primary key default gen_random_uuid(), date date not null,name text not null,rank integer,participants integer,pdf_url text,subjects jsonb not null,created_at timestamptz default now()); insert into public.exams(date,name,subjects) values('2026-10-01','Old summary','[]'); insert into public.viewer_pins(label,pin_hash,expires_at) values('Preserved viewer','pin-hash',now()+interval '1 day'); insert into public.app_sessions values('preserved-admin','admin',null,now()+interval '1 hour');");
     const migration = await readFile("supabase/migrations/20261028135230_tyt_pdf_import.sql","utf8");
     await db.exec(migration);
-    assert.equal(Number((await db.query<{n:number}>("select count(*) n from public.exams")).rows[0].n),0);
+    const preserved = (await db.query<{result:{exam_id:string}}>("select public.import_tyt_exam($1::jsonb,'preserved-admin') result",[JSON.stringify(await fixtureReport())])).rows[0].result.exam_id;
+    const cancellationMigration = await readFile("supabase/migrations/20261028154317_cancelled_questions.sql","utf8");
+    await db.exec(cancellationMigration);
+    assert.equal(Number((await db.query<{n:number}>("select count(*) n from public.exams")).rows[0].n),1);
+    assert.equal(Number((await db.query<{n:number}>("select count(*) n from public.exam_questions where exam_id=$1",[preserved])).rows[0].n),120);
     assert.equal(Number((await db.query<{n:number}>("select count(*) n from public.subjects")).rows[0].n),12);
     assert.equal((await db.query<{label:string}>("select label from public.viewer_pins")).rows[0].label,"Preserved viewer");
     assert.equal((await db.query<{token_hash:string}>("select token_hash from public.app_sessions")).rows[0].token_hash,"preserved-admin");
     const result = await db.query<{result:{status:string}}>("select public.import_tyt_exam($1::jsonb,'preserved-admin') result",[JSON.stringify(await fixtureReport())]);
-    assert.equal(result.rows[0].result.status,"imported");
+    assert.equal(result.rows[0].result.status,"duplicate");
     const core = (sql: string) => sql.slice(sql.indexOf("create table public.exams")).replaceAll("\r\n","\n");
-    assert.equal(core(schema),core(migration),"Fresh install and migration must have identical exam definitions");
+    assert.equal(core(schema),core(migration)+"\n"+cancellationMigration.replaceAll("\r\n","\n"),"Fresh install and migration chain must have identical exam definitions");
   } finally { await db.close(); }
 });

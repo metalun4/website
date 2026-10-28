@@ -9,8 +9,8 @@ function counts(row: Counts) {
   ensure(row.average_net === null || (Number.isFinite(row.average_net) && row.average_net >= -row.question_count / 4 && row.average_net <= row.question_count), "Ortalama net geçersiz.");
 }
 export function answerCounts(qs: ParsedQuestion[]): Counts {
-  const correct_count = qs.filter(q => q.selected_answer === q.correct_answer).length;
-  const blank_count = qs.filter(q => q.selected_answer === null).length;
+  const correct_count = qs.filter(q => q.correct_answer === "İPTAL" || q.selected_answer === q.correct_answer).length;
+  const blank_count = qs.filter(q => q.correct_answer !== "İPTAL" && q.selected_answer === null).length;
   const wrong_count = qs.length - correct_count - blank_count;
   return { question_count: qs.length, correct_count, wrong_count, blank_count, net: correct_count - wrong_count / 4, average_net: null };
 }
@@ -28,7 +28,7 @@ export function validateExam(report: ParsedExam): void {
     ensure(Number.isInteger(q.question_number) && q.question_number >= start && q.question_number < start + s.count, "Soru numarası ders aralığının dışında.");
     const key = `${q.subject_id}:${q.question_number}`;
     ensure(!unique.has(key), "Aynı soru birden fazla kez bulundu."); unique.add(key);
-    ensure(/^[A-E]$/.test(q.correct_answer) && (q.selected_answer === null || /^[A-E]$/.test(q.selected_answer)), "Cevap anahtarı eksik veya geçersiz; iptal edilmiş sorular desteklenmiyor.");
+    ensure((/^[A-E]$/.test(q.correct_answer) || q.correct_answer === "İPTAL") && (q.selected_answer === null || /^[A-E]$/.test(q.selected_answer)), "Cevap anahtarı eksik veya geçersiz.");
     ensure(normalizeTopic(q.topic_label).length > 0 && q.topic_label.length <= 300 && !/[\u0000\ufffd\p{Cc}]/u.test(q.topic_label), "Bir konu etiketi güvenilir şekilde okunamadı.");
     ensure(q.solution_url === null || solutionUrl(q.solution_url) === q.solution_url, "Soru çözüm bağlantısı geçersiz.");
   }

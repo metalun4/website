@@ -116,7 +116,8 @@ try{
   const forged=actionResult(await(await upload("u6krt_69xh.pdf",admin,"confirm",preview.receipt)).text());assert.match(forged.error,/Önizleme/);assert.equal(await examCount(),0);
   const confirmed=actionResult(await(await upload("qksssu3nm_.pdf",admin,"confirm",preview.receipt)).text());assert.match(confirmed.success,/120 soru/);assert.ok(confirmed.reviewTopics.length);assert.equal(await examCount(),1);
   assert.match(actionResult(await(await upload("qksssu3nm_.pdf",admin,"confirm",preview.receipt)).text()).success,/zaten kayıtlı/);assert.equal(await examCount(),1);
-  assert.match(actionResult(await(await upload("5ade3e51cd986a20854fff3770ec091034061db5.pdf",admin)).text()).error,/iptal/);
+  const cancelledPreview=actionResult(await(await upload("5ade3e51cd986a20854fff3770ec091034061db5.pdf",admin)).text()).preview;
+  assert.equal(cancelledPreview.exam.total_net,62.75);assert.equal(cancelledPreview.warnings.filter(w=>w.includes("İPTAL")).length,2);assert.equal(await examCount(),1);
   assert.equal((await upload("qksssu3nm_.pdf",admin,"confirm",preview.receipt,"https://untrusted.example")).status,500);assert.equal(await examCount(),1);
   for(const cookie of [admin,viewer]){const listing=await(await get("/yks27/tyt",cookie)).text();assert.match(listing,/HIZ VE RENK/);assert.match(listing,/67,25/);assert.match(listing,/66,24/);assert.doesNotMatch(listing,/PDF’yi görüntüle/);assert.match(await(await get("/yks27/tyt/dashboard",cookie)).text(),/67,25/);}
   reads.clear();await(await get("/yks27/tyt",viewer)).text();

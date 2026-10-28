@@ -109,7 +109,7 @@ test("confirmation receipts are bound to the file, parsed report, admin session,
   for (const [f,r,s,now] of [["other","report","session",2000],["file","changed","session",2000],["file","report","viewer",2000],["file","report","session",601001]] as const) assert.throws(() => verifyReceipt(token, f,r,s,"secret",now));
   assert.throws(() => verifyReceipt(`${token}x`, "file", "report", "session", "secret", 2000));
 });
-test("malformed, oversized, unrelated, combined and cancelled-answer PDFs are rejected", async () => {
+test("malformed, oversized, unrelated and combined PDFs are rejected", async () => {
   await assert.rejects(extractPdf(Buffer.from("not a PDF")));
   await assert.rejects(extractPdf(new Uint8Array(MAX_PDF_BYTES + 1)));
   const doc = await PDFDocument.create(); const font = await doc.embedFont(StandardFonts.Helvetica);
@@ -117,5 +117,15 @@ test("malformed, oversized, unrelated, combined and cancelled-answer PDFs are re
   await assert.rejects(extractPdf(await doc.save()).then(parsePdf));
   for (let i = 0; i < 3; i++) doc.addPage();
   await assert.rejects(extractPdf(await doc.save()), /iki sayfalık/);
-  await assert.rejects(extractPdf(await fixtureBytes("5ade3e51cd986a20854fff3770ec091034061db5.pdf")).then(parsePdf), /iptal/);
+});
+
+test("explicit cancellations preserve İPTAL and reconcile credited totals without invented keys", async () => {
+  const r = await fixtureReport("5ade3e51cd986a20854fff3770ec091034061db5.pdf");
+  assert.deepEqual(r.questions.filter(q => q.correct_answer === "İPTAL").map(q => [q.subject_id,q.question_number,q.topic_label,q.selected_answer]), [["tyt_math",17,"İPTAL",null],["tyt_math",25,"İPTAL",null]]);
+  assert.deepEqual([r.exam.score,r.exam.total_correct,r.exam.total_wrong,r.exam.total_blank,r.exam.total_net], [320.35,65,9,46,62.75]);
+  assert.equal(r.questions.length,120);
+  assert.equal(r.warnings.filter(w => w.includes("İPTAL")).length,2);
+  const layout = await extractPdf(await fixtureBytes("5ade3e51cd986a20854fff3770ec091034061db5.pdf"));
+  layout.pages[1].text = layout.pages[1].text.filter(b => b.text !== "İPTAL");
+  assert.throws(() => parsePdf(layout), /satırı|anahtarı/);
 });

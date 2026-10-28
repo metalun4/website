@@ -17,7 +17,8 @@ export const SUBJECTS = [
 export type Counts = { question_count: number; correct_count: number; wrong_count: number; blank_count: number; net: number; average_net: number | null };
 export type SubjectResult = Counts & { subject_id: SubjectId; result_scope: "direct" | "aggregate" };
 export type Ranking = { scope: "general" | "institution" | "branch" | "class"; rank: number; participant_count: number };
-export type ParsedQuestion = { question_number: number; subject_id: SubjectId; topic_label: string; correct_answer: Answer; selected_answer: Answer | null; solution_url: string | null };
+// İPTAL preserves the printed cancellation marker; it is not an answer key.
+export type ParsedQuestion = { question_number: number; subject_id: SubjectId; topic_label: string; correct_answer: Answer | "İPTAL"; selected_answer: Answer | null; solution_url: string | null };
 export type ExamInfo = { exam_type: "TYT"; name: string; exam_date: string; institution_name: string | null; class_label: string | null; score: number | null; total_questions: number; total_correct: number; total_wrong: number; total_blank: number; total_net: number; average_net: number | null; report_generated_at: string | null; source_pdf_path: null };
 export type ParsedExam = { exam: ExamInfo; subjects: SubjectResult[]; rankings: Ranking[]; questions: ParsedQuestion[]; warnings: string[] };
 export type TextBox = { text: string; x: number; y: number; width: number; height: number };
