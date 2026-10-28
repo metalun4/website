@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { allowLogin, createSession, destroySession, hash, requireAdmin } from "@/lib/session";
 import { db, configured, supabase } from "@/lib/storage";
-import { parseExam } from "@/lib/exams";
 
 export type ActionState = { error?: string; success?: string; pin?: string };
 const errorText = (error: unknown) => error instanceof Error ? error.message : "İşlem başarısız.";
@@ -43,19 +42,6 @@ export async function login(_: ActionState, form: FormData): Promise<ActionState
 export async function logout() {
   await destroySession();
   redirect("/yks27/login");
-}
-
-export async function saveExam(_: ActionState, form: FormData): Promise<ActionState> {
-  await requireAdmin();
-  try {
-    const exam = parseExam(form);
-    const id = form.get("id");
-    const rows = await db<unknown[]>(id ? `exams?id=eq.${uuid(id)}` : "exams", { method: id ? "PATCH" : "POST", body: JSON.stringify(exam) });
-    if (!rows.length) return { error: "Kayıt bulunamadı. Sayfayı yenileyin." };
-  } catch (error) { return { error: errorText(error) }; }
-  revalidatePath("/yks27/tyt");
-  revalidatePath("/yks27/tyt/dashboard");
-  redirect("/yks27/admin?saved=1");
 }
 
 export async function deleteExam(_: ActionState, form: FormData): Promise<ActionState> {

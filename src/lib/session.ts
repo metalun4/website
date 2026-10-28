@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { createHmac, randomBytes } from "node:crypto";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -12,7 +13,12 @@ export function hash(value: string) {
   return createHmac("sha256", process.env.SESSION_SECRET).update(value).digest("hex");
 }
 
-export async function session() {
+// Only deduplicate within the current React server request. Revocation and
+// expiry are rechecked on every new request; never use a shared/TTL auth cache.
+export const session = cache(readSession);
+
+// Confirmation must bypass request memoization after the CPU-bound PDF parse.
+export async function readSession() {
   if (!configured()) return null;
   const token = (await cookies()).get(cookieName)?.value;
   if (!token || !/^[a-f0-9]{64}$/.test(token)) return null;

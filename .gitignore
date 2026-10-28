@@ -14,6 +14,9 @@ node_modules/
 /coverage/
 /playwright-report/
 /test-results/
+/tests/fixtures/tyt/*.pdf
+/src/lib/exam-import/pdf-worker.generated.mjs
+/supabase/.temp/
 .nyc_output/
 /playwright/.cache/
 
@@ -70,6 +73,53 @@ report.*.json
 # Local deployment configuration
 .vercel/
 .netlify/
+
+# Local AI-agent instructions, prompts, configuration, and conversation state
+AGENTS.md
+AGENTS.override.md
+CLAUDE.md
+GEMINI.md
+CODEX.md
+COPILOT.md
+SKILL.md
+skills-lock.json
+.agents/
+.agent/
+.codex/
+.claude/
+.cursor/
+.windsurf/
+.aider*
+.cursorrules
+.cursorignore
+.windsurfrules
+.clinerules/
+.roo/
+.continue/
+.gemini/
+.opencode/
+.kiro/
+.grok/
+.prompts/
+prompts/
+*.prompt.md
+.copilot/
+.mcp.json
+mcp.json
+*.code-workspace
+.github/copilot-instructions.md
+.github/instructions/
+.github/prompts/
+.github/agents/
+
+# Local database credentials, dumps, backups, and security scan artifacts
+.supabase/
+supabase/.branches/
+*.dump
+*.backup
+*.sqlite
+*.sqlite3
+codex-security-scans/
 
 # Generated TypeScript files
 *.tsbuildinfo

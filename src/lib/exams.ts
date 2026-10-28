@@ -1,36 +1,31 @@
 import "server-only";
 import { db } from "./storage";
 import { requireSession } from "./session";
-import { subjects, type Exam } from "@/app/yks27/tyt/data";
-import { safePdfUrl } from "./pdf-url";
+import type { Exam } from "@/app/yks27/tyt/data";
+import type { SubjectResult, Ranking } from "./exam-import/types";
+
+type ExamSummary = {
+  id: string; name: string; exam_date: string; average_net: number | null;
+  exam_subject_results: Pick<SubjectResult, "subject_id" | "result_scope" | "correct_count" | "wrong_count" | "average_net">[];
+  exam_rankings: Ranking[];
+};
 
 export type StoredExam = Exam & { id: string };
 export async function getExams() {
   await requireSession();
-  return db<StoredExam[]>("exams?select=*&order=date.asc,id.asc");
-}
-
-export function parseExam(form: FormData): Exam {
-  const name = String(form.get("name") ?? "").trim();
-  const date = String(form.get("date") ?? "");
-  if (!name || name.length > 150 || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(Date.parse(date)) || new Date(date).toISOString().slice(0, 10) !== date) throw new Error("Geçerli bir ad ve tarih girin.");
-  function value(key: string, min: number, max: number, integer = false) {
-    const raw = String(form.get(key) ?? "").trim();
-    if (!raw) return null;
-    const n = Number(raw);
-    if (!Number.isFinite(n) || n < min || n > max || (integer && !Number.isInteger(n))) throw new Error(`${key}: geçersiz değer.`);
-    return n;
-  }
-  const rank = value("rank", 1, 10000000, true);
-  const participants = value("participants", 1, 10000000, true);
-  if (rank !== null && participants !== null && rank > participants) throw new Error("Sıralama katılımcı sayısını aşamaz.");
-  const rawPdfUrl = String(form.get("pdf_url") ?? "").trim();
-  const pdf_url = safePdfUrl(rawPdfUrl);
-  if (rawPdfUrl && !pdf_url) throw new Error("Geçerli bir HTTP veya HTTPS PDF bağlantısı girin (en fazla 2048 karakter).");
-  return { name, date, rank, participants, pdf_url, subjects: subjects.map(s => {
-    const correct = value(`${s.key}.correct`, 0, s.questions, true);
-    const incorrect = value(`${s.key}.incorrect`, 0, s.questions, true);
-    if ((correct ?? 0) + (incorrect ?? 0) > s.questions) throw new Error(`${s.label}: soru sayısı aşıldı.`);
-    return { correct, incorrect, average: value(`${s.key}.average`, -s.questions / 4, s.questions) };
-  }) };
+  // Read only the four displayed subject summaries and the general ranking.
+  // The nine detailed results, three other rankings, and unused exam columns
+  // stay in the database rather than consuming Free-tier egress on each view.
+  const rows = await db<ExamSummary[]>("exams?exam_type=eq.TYT&select=id,name,exam_date,average_net,exam_subject_results(subject_id,result_scope,correct_count,wrong_count,average_net),exam_rankings(scope,rank,participant_count)&exam_subject_results.subject_id=in.(tyt_turkish,tyt_social,tyt_math,tyt_science)&exam_subject_results.or=(result_scope.eq.aggregate,subject_id.eq.tyt_turkish)&exam_rankings.scope=eq.general&order=exam_date.asc,id.asc");
+  return rows.map(row => {
+    const general = row.exam_rankings.find(r => r.scope === "general");
+    return {
+      id: row.id, name: row.name, date: row.exam_date, rank: general?.rank ?? null,
+      participants: general?.participant_count ?? null, average_net: row.average_net,
+      subjects: [ ["tyt_turkish", "direct"], ["tyt_social", "aggregate"], ["tyt_math", "aggregate"], ["tyt_science", "aggregate"] ].map(([id, scope]) => {
+        const r = row.exam_subject_results.find(r => r.subject_id === id && r.result_scope === scope);
+        return { correct: r?.correct_count ?? null, incorrect: r?.wrong_count ?? null, average: r?.average_net ?? null };
+      }),
+    } satisfies StoredExam;
+  });
 }

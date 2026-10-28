@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 
 function Section({ index, title, description, icon: Icon, children }: { index: string; title: string; description: string; icon: typeof Activity; children: React.ReactNode }) {
-  return <section className="mb-[30px]" aria-labelledby={`section-${index}`}>
+  return <section id={`analysis-${index}`} className="mb-[30px] scroll-mt-6" aria-labelledby={`section-${index}`}>
     <header className="flex items-center gap-[15px] rounded-t-[11px] border border-border bg-surface-emphasis px-[22px] py-[18px] text-foreground max-[520px]:gap-2.5 max-[520px]:px-[13px] max-[520px]:py-[15px]">
       <span className="border-r border-border pr-[15px] text-xl leading-[1.6] font-normal text-subtle max-[520px]:pr-2.5 max-[520px]:text-[17px]">{index}</span>
       <div><h2 id={`section-${index}`} className="text-base font-semibold tracking-tight max-[520px]:text-sm">{title}</h2><p className="mt-1 text-xs leading-relaxed text-muted">{description}</p></div>
@@ -42,7 +42,7 @@ export default async function TytDashboard() {
   const exams = (await getExams()).map(exam => ({ ...calculateExam(exam), id: exam.id }));
   const latest = exams[exams.length - 1];
   const first = exams[0];
-  if (!latest || !first) return <main className="min-h-screen bg-background px-5 py-16 text-left text-foreground" lang="tr"><div className="mx-auto max-w-3xl"><AccountBar admin={current.role === "admin"} /><Link href="/yks27/tyt" className="text-sm text-muted hover:underline">← TYT denemeleri</Link><h1 className="mt-8 text-2xl font-semibold">Henüz deneme kaydı yok</h1><p className="mt-3 text-muted">Yönetici ilk deneme kaydını eklediğinde grafikler burada görünecek.</p></div></main>;
+  if (!latest || !first) return <main className="min-h-screen bg-background px-5 py-16 text-left text-foreground" lang="tr"><div className="mx-auto max-w-3xl"><AccountBar admin={current.role === "admin"} /><Link href="/yks27/tyt" className="text-sm text-muted hover:underline">← TYT denemeleri</Link><h1 id="yks-content" tabIndex={-1} className="mt-8 text-2xl font-semibold">Henüz deneme kaydı yok</h1><p className="mt-3 text-muted">Yönetici ilk deneme kaydını eklediğinde grafikler burada görünecek.</p></div></main>;
   const overall = (key: "net" | "average" | "outperformed" | "index" | "accuracy" | "dps", label: string, color = "var(--chart-primary)"): Series => ({ label, color, values: exams.map(e => e[key]) });
   const bySubject = (key: "relative" | "index" | "accuracy" | "dps"): Series[] => subjects.map((s, i) => ({ label: s.label, color: s.color, values: exams.map(e => e.subjects[i][key]) }));
 
@@ -64,19 +64,20 @@ export default async function TytDashboard() {
         <Link href="/yks27/tyt" className="mb-5 inline-flex text-sm text-muted hover:text-foreground hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground">← TYT denemeleri</Link>
         <div className="mb-6 flex flex-wrap items-center gap-[18px] text-xs font-medium tracking-[1.2px] text-subtle max-[520px]:gap-3"><span className="flex items-center gap-[9px] border-r border-border pr-[18px] text-xs tracking-[1px] text-muted"><BookOpen size={18} aria-hidden="true" /> TYT 2027</span><span>TYT DENEME ANALİZİ</span></div>
         <div className="flex items-center justify-between gap-5 max-[900px]:flex-col max-[900px]:items-start max-[900px]:gap-[17px]">
-          <div><h1 className="text-[clamp(26px,3.5vw,39px)] leading-[1.25] font-semibold tracking-tight">TYT Gelişim Paneli<span className="text-subtle">.</span></h1><p className="mt-3 text-sm leading-relaxed text-muted max-[520px]:text-xs">Net Gelişimi · Sınav Performansı · Doğruluk · DPS</p></div>
+          <div><h1 id="yks-content" tabIndex={-1} className="text-[clamp(26px,3.5vw,39px)] leading-[1.25] font-semibold tracking-tight">TYT Gelişim Paneli<span className="text-subtle">.</span></h1><p className="mt-3 text-sm leading-relaxed text-muted max-[520px]:text-xs">Net Gelişimi · Sınav Performansı · Doğruluk · DPS</p></div>
           <div className="flex items-center gap-[9px] text-xs whitespace-nowrap text-muted"><CalendarDays size={17} aria-hidden="true" /><span>{dateLabel(first.date)} — {dateLabel(latest.date)}</span></div>
         </div>
         <div className="mt-[23px] flex flex-wrap items-center gap-[9px] text-xs text-muted"><span className="size-1.5 rounded-full bg-foreground" /><span>Son deneme <strong className="ml-[7px] font-medium text-foreground">{latest.name}</strong></span><span className="ml-1 border-l border-border pl-3">{dateLabel(latest.date)}</span></div>
       </header>
 
       <section className="mb-10 grid grid-cols-2 gap-3.5 min-[901px]:grid-cols-4 max-[520px]:mb-7 max-[520px]:gap-[9px]" aria-label="Son sınav özeti">{cards.map(({ label, value, detail, icon: Icon, featured }) =>
-        <article className={`rounded-xl border border-border px-[22px] py-5 max-[900px]:p-[18px] max-[520px]:px-3 max-[520px]:py-[15px] ${featured ? "bg-surface-emphasis" : "bg-surface"}`} key={label}>
+        <article className={`rounded-xl border border-border px-[22px] py-5 max-[900px]:p-[18px] max-[520px]:px-3 max-[520px]:py-[15px] ${featured ? "yks-featured" : "bg-surface"}`} key={label}>
           <div className="flex items-center justify-between gap-1.5 text-muted"><h2 className="text-xs font-medium">{label}</h2><Icon className="shrink-0 text-subtle max-[520px]:hidden" size={17} aria-hidden="true" /></div>
           <strong className="mt-[9px] block text-[30px] leading-[1.4] font-semibold tracking-tight text-foreground tabular-nums max-[520px]:text-[26px]">{value}</strong>
           <p className="mt-1.5 text-xs leading-relaxed text-subtle">{detail}</p>
         </article>)}</section>
 
+      <nav aria-label="Analiz bölümleri" className="yks-jump-links mb-7">{["Genel gelişim", "Göreli performans", "Dersler", "Doğruluk", "DPS"].map((label, i) => <a key={label} href={`#analysis-0${i + 1}`}>{label}</a>)}</nav>
       <Section index="01" title="Genel Gelişim" description="Netlerinin ve genel sıralamanın zaman içindeki değişimi." icon={ChartNoAxesCombined}>
         <Chart exams={exams} title="Toplam Net ve Sınav Ortalaması" description="Her denemede senin netin ve sınavın genel ortalaması." unit=" net" series={[overall("net", "Toplam net"), overall("average", "Sınav ortalaması", "var(--chart-secondary)")]} />
         <Chart exams={exams} title="Geride Bırakılan %" description="Sınav katılımcıları arasındaki göreli konumun." unit="%" domain={[0, 100]} series={[overall("outperformed", "Geride bırakılan")]} />

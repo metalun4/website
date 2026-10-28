@@ -1,4 +1,4 @@
-import type {Metadata} from "next";
+import type {Metadata, Viewport} from "next";
 import {Geist} from "next/font/google";
 import "./globals.css";
 
@@ -7,6 +7,13 @@ const geist = Geist({
   subsets: ["latin", "latin-ext"],
   display: "swap",
 });
+
+export const viewport: Viewport = {
+  themeColor: [
+    {media: "(prefers-color-scheme: light)", color: "#f3f2ef"},
+    {media: "(prefers-color-scheme: dark)", color: "#1c1c1c"},
+  ],
+};
 
 const metaInfo = {
   author: "Baris Aydemir",

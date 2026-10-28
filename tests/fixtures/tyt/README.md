@@ -1,0 +1,5 @@
+The six goldens were extracted independently with pypdf and pdfplumber's table-grid extraction, rather than the application's PDF.js position parser. They include all 720 question labels, answers and annotation URLs, every reported subject cell, the current header, rankings and footer. Defective font mappings were independently checked against the source fonts' outlines and GSUB definitions.
+
+Original PDFs contain personal information and are not committed. Set `YKS_PDF_FIXTURE_DIR` to their directory; the default is `~/Documents/ykspdf`. Missing files fail the fixture tests explicitly. SHA-256 checks ensure the supplied PDFs match these goldens. Historical rows are not used as expected data.
+
+The additional ÖZDEBİR report is an expected rejection fixture because it contains cancelled questions without answer keys. The supplied 345 report is supported but is outside the six-exam acceptance set. No combined-report PDF was supplied; a generated five-page document checks the page-count rejection path.

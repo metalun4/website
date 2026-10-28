@@ -1,4 +1,4 @@
-// Shared chart calculations. Initial workbook records are in supabase/seed.sql.
+// Shared chart calculations. Imported results come from normalized subject rows.
 // Net, empty answers, and exam totals are derived from stored answer counts.
 export const subjects = [
   { key: "turkce", label: "Türkçe", color: "var(--chart-primary)", questions: 40 },
@@ -13,7 +13,7 @@ export type Exam = {
   name: string;
   rank: number | null;
   participants: number | null;
-  pdf_url: string | null;
+  average_net: number | null;
   subjects: SubjectResult[];
 };
 
@@ -50,7 +50,7 @@ export function calculateExam(exam: Exam) {
   const results = exam.subjects.map((s, i) => ({ ...s, ...answerTotals(s.correct, s.incorrect, subjects[i].questions) }));
   const net = sum(results.map(s => s.net));
   const empty = sum(results.map(s => s.empty));
-  const average = sum(exam.subjects.map(s => s.average));
+  const average = exam.average_net;
   const correct = sum(exam.subjects.map(s => s.correct));
   const incorrect = sum(exam.subjects.map(s => s.incorrect));
   const ranking = ratio(exam.rank, exam.participants);

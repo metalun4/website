@@ -8,6 +8,7 @@ export async function supabase<T>(path: string, init: RequestInit = {}): Promise
   if (!configured()) throw new Error("Supabase ortam değişkenlerini yapılandırın.");
   const response = await fetch(`${process.env.SUPABASE_URL}${path}`, {
     ...init,
+    signal: init.signal ?? AbortSignal.timeout(10_000),
     headers: { apikey: process.env.SUPABASE_SERVICE_ROLE_KEY!, Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`, "Content-Type": "application/json", Prefer: "return=representation", ...init.headers },
     cache: "no-store",
   });

@@ -37,6 +37,7 @@ export default function Chart({ exams, title, description, series, unit = "", do
   const selected = active === null ? null : exams[active];
   const tooltipWidth = Math.min(240, width * 0.94);
   const tooltipLeft = active === null ? 0 : Math.max(0, Math.min(width - tooltipWidth, x(active) - tooltipWidth / 2));
+  const labelStep = Math.max(1, Math.ceil(exams.length / Math.max(2, Math.floor((width - left - right) / 75))));
 
   return (
     <article className={`min-w-0 rounded-[9px] border border-border bg-surface px-[18px] pt-[22px] pb-2.5 max-[520px]:px-2.5 max-[520px]:pt-[17px] max-[520px]:pb-2 ${wide ? "col-span-full" : ""}`} aria-labelledby={id}>
@@ -60,17 +61,27 @@ export default function Chart({ exams, title, description, series, unit = "", do
             const start = i === 0 ? left : (x(i - 1) + x(i)) / 2;
             const end = i === exams.length - 1 ? width - right : (x(i) + x(i + 1)) / 2;
             return <g key={exam.id}>
-            <text x={x(i)} y={height - 12} textAnchor="middle" className="fill-subtle text-[11px]">{dateLabel(exam.date).slice(0, 5)}</text>
+            {(i % labelStep === 0 && i < exams.length - Math.ceil(labelStep / 2) || i === exams.length - 1) && <text x={x(i)} y={height - 12} textAnchor="middle" className="fill-subtle text-[11px]">{dateLabel(exam.date).slice(0, 5)}</text>}
             <rect className="fill-transparent focus-visible:rounded-sm focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-foreground" x={start} y={top} width={end - start} height={height - top} tabIndex={0} role="img"
               aria-label={`${exam.name}, ${dateLabel(exam.date)}. ${series.map(s => `${s.label}: ${number(s.values[i])}${s.values[i] === null ? "" : unit}`).join(". ")}`}
               onPointerEnter={() => setActive(i)} onPointerDown={() => setActive(i)} onFocus={() => setActive(i)} onBlur={() => setActive(null)} onKeyDown={event => { if (event.key === "Escape") setActive(null); }} />
           </g>; })}
         </svg>
         {selected && active !== null && <div className="pointer-events-none absolute top-1.5 z-2 w-[240px] max-w-[94%] rounded-lg border border-subtle bg-surface p-3 text-xs text-foreground shadow-lg shadow-foreground/10" role="status" style={{ left: tooltipLeft }}>
-          <strong className="block text-xs font-semibold">{selected.name}</strong><small className="mt-1 mb-2.5 block text-subtle">{dateLabel(selected.date)}</small>
+          <strong className="block break-words text-xs font-semibold">{selected.name}</strong><small className="mt-1 mb-2.5 block text-subtle">{dateLabel(selected.date)}</small>
           {series.map(s => <div className="mt-2 flex justify-between gap-2.5" key={s.label}><span className="flex items-center gap-1.5 text-muted"><svg className="h-2 w-6 shrink-0" viewBox="0 0 24 8" aria-hidden="true"><line x1="1" x2="23" y1="4" y2="4" stroke={s.color} strokeWidth="2.5" strokeLinecap="round" /></svg>{s.label}</span><b className="shrink-0 font-medium tabular-nums">{number(s.values[active])}{s.values[active] === null ? "" : unit}</b></div>)}
         </div>}
       </div>
+      <details className="mt-2 border-t border-border text-xs">
+        <summary className="flex min-h-11 cursor-pointer items-center font-medium text-accent">Verileri tablo olarak göster</summary>
+        <div className="max-h-80 overflow-auto pb-3" role="region" aria-label={`${title} veri tablosu`} tabIndex={0}>
+          <table className="w-full text-left">
+            <caption className="sr-only">{title}</caption>
+            <thead><tr><th scope="col" className="p-2">Deneme</th>{series.map(s => <th scope="col" key={s.label} className="p-2 text-right">{s.label}</th>)}</tr></thead>
+            <tbody>{exams.map((exam, i) => <tr key={exam.id} className="border-t border-border"><th scope="row" className="min-w-32 p-2 font-normal"><span className="block break-words">{exam.name}</span><span className="text-subtle">{dateLabel(exam.date)}</span></th>{series.map(s => <td key={s.label} className="p-2 text-right whitespace-nowrap tabular-nums">{number(s.values[i])}{s.values[i] == null ? "" : unit}</td>)}</tr>)}</tbody>
+          </table>
+        </div>
+      </details>
     </article>
   );
 }

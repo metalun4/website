@@ -1,233 +1,138 @@
-// Production-server integration checks with an isolated, in-memory Supabase API double.
-// Run after npm run build: node scripts/test-access.mjs
+// Production Next.js actions against an isolated PostgreSQL-backed Supabase API
+// adapter. Never uses the configured remote project or real credentials.
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { once } from "node:events";
-
-const adminId = randomUUID();
-const tables = { exams: [], viewer_pins: [], app_sessions: [] };
+import { readFile, readdir } from "node:fs/promises";
+import { join } from "node:path";
+import { homedir } from "node:os";
+import { createRequire } from "node:module";
+import { PGlite } from "@electric-sql/pglite";
+const require = createRequire(import.meta.url);
+const { encodeReply } = require("next/dist/compiled/react-server-dom-turbopack/client.browser");
+const db = new PGlite();
+await db.exec("create role anon;create role authenticated;create role service_role bypassrls;");
+await db.exec(await readFile("supabase/schema.sql", "utf8"));
+const adminId = randomUUID(), key = "isolated-server-credential-for-tests";
 let limited = false;
-const api = createServer(async (req, res) => {
-  const url = new URL(req.url, "http://localhost");
-  let raw = "";
-  for await (const chunk of req) raw += chunk;
-  const body = raw ? JSON.parse(raw) : null;
-  res.setHeader("Content-Type", "application/json");
-  assert.equal(req.headers.apikey, "test-server-key");
-  if (url.pathname === "/auth/v1/token") {
-    if (body.email !== "admin@example.test" || body.password !== "test-password") {
-      res.writeHead(400).end(JSON.stringify({ error: "invalid credentials" }));
-    } else res.end(JSON.stringify({ user: { id: adminId } }));
-    return;
-  }
-  if (url.pathname.endsWith("/rpc/consume_login_attempt")) return res.end(JSON.stringify(!limited));
-  const name = url.pathname.split("/").at(-1);
-  const table = tables[name];
-  if (!table) return res.writeHead(404).end("{}");
-  const matches = row => [...url.searchParams].every(([key, filter]) => {
-    if (["select", "order", "limit"].includes(key)) return true;
-    if (filter.startsWith("eq.")) return String(row[key]) === filter.slice(3);
-    if (filter.startsWith("gt.")) return row[key] > filter.slice(3);
-    throw new Error(`Unhandled query: ${key}=${filter}`);
-  });
-  let rows = table.filter(matches);
-  if (req.method === "POST") {
-    const row = { id: randomUUID(), revoked: false, created_at: new Date().toISOString(), ...body };
-    table.push(row);
-    rows = [row];
-  } else if (req.method === "PATCH") rows.forEach(row => Object.assign(row, body));
-  else if (req.method === "DELETE") tables[name] = table.filter(row => !matches(row));
-  res.end(JSON.stringify(rows));
+const reads = new Map();
+const api = createServer(async (req,res) => {
+  res.setHeader("Content-Type","application/json");
+  try {
+    assert.equal(req.headers.apikey,key);
+    const url = new URL(req.url,"http://localhost");
+    let raw="";for await(const c of req) raw+=c;
+    const body=raw?JSON.parse(raw):null;
+    if(url.pathname==="/auth/v1/token") {
+      if(body.email!=="admin@example.test"||body.password!=="test-password")return res.writeHead(400).end("{}");
+      return res.end(JSON.stringify({user:{id:adminId}}));
+    }
+    const name=url.pathname.split("/").at(-1);
+    if(req.method==="GET") reads.set(name,(reads.get(name)??0)+1);
+    if(name==="consume_login_attempt")return res.end(JSON.stringify(!limited));
+    if(["preview_tyt_import","import_tyt_exam"].includes(name)) {
+      const args=name==="import_tyt_exam"?[JSON.stringify(body.payload),body.admin_session_hash]:[JSON.stringify(body.payload)];
+      return res.end(JSON.stringify((await db.query(`select public.${name}($1::jsonb${args.length===2?",$2":""}) result`,args)).rows[0].result));
+    }
+    assert.ok(["exams","viewer_pins","app_sessions"].includes(name));
+    const params=[],filters=[];
+    for(const [column,filter]of url.searchParams) {
+      if(["select","order","limit"].includes(column))continue;
+      if(column==="exam_subject_results.subject_id") { assert.equal(filter,"in.(tyt_turkish,tyt_social,tyt_math,tyt_science)");continue; }
+      if(column==="exam_subject_results.or") { assert.equal(filter,"(result_scope.eq.aggregate,subject_id.eq.tyt_turkish)");continue; }
+      if(column==="exam_rankings.scope") { assert.equal(filter,"eq.general");continue; }
+      assert.match(column,/^[a-z_]+$/);const op=filter.slice(0,3);assert.ok(["eq.","gt."].includes(op));
+      params.push(filter.slice(3));filters.push(`t.${column}${op==="eq."?"=":">"}$${params.length}`);
+    }
+    const where=filters.length?` where ${filters.join(" and ")}`:"";
+    let rows;
+    if(req.method==="GET") {
+      if(name==="exams") {
+        assert.equal(url.searchParams.get("select"),"id,name,exam_date,average_net,exam_subject_results(subject_id,result_scope,correct_count,wrong_count,average_net),exam_rankings(scope,rank,participant_count)");
+        assert.equal(url.searchParams.get("exam_rankings.scope"),"eq.general");
+        rows=await db.query(`select jsonb_build_object('id',t.id,'name',t.name,'exam_date',t.exam_date,'average_net',t.average_net,
+          'exam_subject_results',coalesce((select jsonb_agg(jsonb_build_object('subject_id',r.subject_id,'result_scope',r.result_scope,'correct_count',r.correct_count,'wrong_count',r.wrong_count,'average_net',r.average_net)) from public.exam_subject_results r where r.exam_id=t.id and r.subject_id in ('tyt_turkish','tyt_social','tyt_math','tyt_science') and (r.result_scope='aggregate' or r.subject_id='tyt_turkish')),'[]'::jsonb),
+          'exam_rankings',coalesce((select jsonb_agg(jsonb_build_object('scope',r.scope,'rank',r.rank,'participant_count',r.participant_count)) from public.exam_rankings r where r.exam_id=t.id and r.scope='general'),'[]'::jsonb)) as row from public.exams t${where} order by exam_date,id`,params);
+      } else rows=await db.query(`select to_jsonb(t) as row from public.${name} t${where}`,params);
+    }else if(req.method==="POST") {
+      const cols=Object.keys(body);for(const c of cols)assert.match(c,/^[a-z_]+$/);
+      rows=await db.query(`insert into public.${name}(${cols.join(",")}) select ${cols.map(c=>`r.${c}`).join(",")} from jsonb_populate_record(null::public.${name},$1::jsonb) r returning to_jsonb(${name}.*) as row`,[JSON.stringify(body)]);
+    }else if(req.method==="PATCH") {
+      const cols=Object.keys(body);for(const c of cols)assert.match(c,/^[a-z_]+$/);
+      const sets=cols.map(c=>{params.push(body[c]);return `${c}=$${params.length}`});
+      rows=await db.query(`update public.${name} t set ${sets.join(",")}${where} returning to_jsonb(t) as row`,params);
+    }else{
+      assert.equal(req.method,"DELETE");rows=await db.query(`delete from public.${name} t${where} returning to_jsonb(t) as row`,params);
+    }
+    res.end(JSON.stringify(rows.rows.map(r=>r.row)));
+  }catch{res.writeHead(400).end(JSON.stringify({error:"isolated database rejected request"}));}
 });
-api.listen(0, "127.0.0.1");
-await once(api, "listening");
-const port = 3197;
-const origin = `http://localhost:${port}`;
-const child = spawn(process.execPath, ["node_modules/next/dist/bin/next", "start", "-p", String(port)], {
-  env: { ...process.env, VERCEL: "", SUPABASE_URL: `http://127.0.0.1:${api.address().port}`, SUPABASE_SERVICE_ROLE_KEY: "test-server-key", ADMIN_USER_ID: adminId, SESSION_SECRET: "isolated-integration-test-secret-at-least-32-chars" },
-  stdio: ["ignore", "pipe", "pipe"], windowsHide: true,
-});
-let logs = "";
-child.stdout.on("data", chunk => { logs += chunk; });
-child.stderr.on("data", chunk => { logs += chunk; });
-const get = (path, cookie = "") => fetch(origin + path, { headers: { cookie }, redirect: "manual" });
-const decode = text => text.replaceAll("&quot;", '"').replaceAll("&amp;", "&").replaceAll("&#x27;", "'").replaceAll("&lt;", "<").replaceAll("&gt;", ">");
-function form(html, marker) {
-  const match = [...html.matchAll(/<form\b[^>]*>([\s\S]*?)<\/form>/g)].find(m => m[1].includes(marker));
-  assert.ok(match, `Form containing ${marker} exists`);
-  const data = new FormData();
-  for (const input of match[1].matchAll(/<input\b[^>]*>/g)) {
-    const name = input[0].match(/name="([^"]*)"/)?.[1];
-    const value = input[0].match(/value="([^"]*)"/)?.[1];
-    if (name && input[0].includes('type="hidden"')) data.append(decode(name), decode(value ?? ""));
-  }
-  return data;
+api.listen(0,"127.0.0.1");await once(api,"listening");
+const reservation=createServer();reservation.listen(0,"127.0.0.1");await once(reservation,"listening");const port=reservation.address().port;await new Promise(r=>reservation.close(r));
+const origin=`http://localhost:${port}`;
+const child=spawn(process.execPath,["node_modules/next/dist/bin/next","start","-p",String(port)],{env:{...process.env,VERCEL:"",SUPABASE_URL:`http://127.0.0.1:${api.address().port}`,SUPABASE_SERVICE_ROLE_KEY:key,ADMIN_USER_ID:adminId,SESSION_SECRET:"isolated-integration-test-secret-at-least-32-chars"},stdio:["ignore","pipe","pipe"],windowsHide:true});
+let logs="";child.stdout.on("data",c=>{logs+=c});child.stderr.on("data",c=>{logs+=c});
+const get=(path,cookie="")=>fetch(origin+path,{headers:{cookie},redirect:"manual"});
+const post=(path,data,cookie="")=>fetch(origin+path,{method:"POST",body:data,headers:{cookie,Origin:origin},redirect:"manual"});
+const decode=s=>s.replaceAll("&quot;",'"').replaceAll("&amp;","&").replaceAll("&#x27;","'").replaceAll("&lt;","<").replaceAll("&gt;",">");
+function form(html,marker){
+  const match=[...html.matchAll(/<form\b[^>]*>([\s\S]*?)<\/form>/g)].find(m=>m[1].includes(marker));assert.ok(match,`Form containing ${marker}`);
+  const data=new FormData();for(const input of match[1].matchAll(/<input\b[^>]*>/g)){
+    const name=input[0].match(/name="([^"]*)"/)?.[1],value=input[0].match(/value="([^"]*)"/)?.[1];
+    if(name&&input[0].includes('type="hidden"'))data.append(decode(name),decode(value??""));
+  }return data;
 }
-async function post(path, data, cookie = "") {
-  return fetch(origin + path, { method: "POST", body: data, headers: { cookie, Origin: origin }, redirect: "manual" });
+const cookieOf=r=>r.headers.getSetCookie().find(v=>v.startsWith("yks_session=")&&!v.startsWith("yks_session=;"))?.split(";")[0];
+const manifest=JSON.parse(await readFile(".next/server/server-reference-manifest.json","utf8"));
+const actionId=Object.entries(manifest.node).find(([,v])=>v.exportedName==="importPdf")?.[0];assert.ok(actionId);
+async function upload(file,cookie,mode="preview",receipt="",requestOrigin=origin){
+  const bytes=await readFile(join(process.env.YKS_PDF_FIXTURE_DIR??join(homedir(),"Documents","ykspdf"),file));
+  const data=new FormData();data.set("pdf",new File([bytes],file,{type:"application/pdf"}));data.set("mode",mode);data.set("receipt",receipt);
+  return fetch(origin+"/yks27/admin",{method:"POST",headers:{cookie,Origin:requestOrigin,"Next-Action":actionId},body:await encodeReply([data]),redirect:"manual"});
 }
-const cookieOf = response => response.headers.getSetCookie().find(value => value.startsWith("yks_session=") && !value.startsWith("yks_session=;"))?.split(";")[0];
-try {
-  for (let i = 0; i < 100; i++) {
-    try { if ((await get("/yks27/login")).status === 200) break; } catch { /* server starting */ }
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
-  for (const path of ["/yks27", "/yks27/ayt", "/yks27/tyt", "/yks27/tyt/dashboard", "/yks27/admin"]) {
-    const response = await get(path);
-    assert.equal(response.status, 307);
-    assert.equal(response.headers.get("location"), "/yks27/login");
-  }
-  const loginHtml = await (await get("/yks27/login")).text();
-  const bad = form(loginHtml, 'name="mode"');
-  bad.set("mode", "admin"); bad.set("email", "admin@example.test"); bad.set("password", "wrong");
-  assert.equal(cookieOf(await post("/yks27/login", bad)), undefined);
-  const credentials = form(loginHtml, 'name="mode"');
-  credentials.set("mode", "admin"); credentials.set("email", "admin@example.test"); credentials.set("password", "test-password");
-  const signedIn = await post("/yks27/login", credentials);
-  assert.equal(signedIn.status, 303);
-  assert.equal(signedIn.headers.get("location"), "/yks27");
-  const admin = cookieOf(signedIn);
-  assert.ok(admin);
-  assert.match(signedIn.headers.get("set-cookie"), /HttpOnly/i);
-  assert.match(signedIn.headers.get("set-cookie"), /Secure/i);
-  assert.match(await (await get("/yks27/tyt", admin)).text(), /Henüz deneme kaydı yok/);
-  let adminHtml = await (await get("/yks27/admin", admin)).text();
-  const invalid = form(adminHtml, 'name="name"');
-  invalid.set("name", "Invalid"); invalid.set("date", "2026-10-18"); invalid.set("turkce.correct", "40"); invalid.set("turkce.incorrect", "1");
-  assert.match(await (await post("/yks27/admin", invalid, admin)).text(), /soru sayısı aşıldı/);
-  assert.equal(tables.exams.length, 0);
-  invalid.set("turkce.correct", "0"); invalid.set("turkce.incorrect", "0");
-  for (const url of ["javascript:alert(1)", "ftp://example.test/exam.pdf", "https://", "https://user:password@example.test/exam.pdf"]) {
-    invalid.set("pdf_url", url);
-    assert.match(await (await post("/yks27/admin", invalid, admin)).text(), /Geçerli bir HTTP veya HTTPS PDF bağlantısı/);
-    assert.equal(tables.exams.length, 0);
-  }
-  const create = form(adminHtml, 'name="name"');
-  create.set("name", "Private integration exam"); create.set("date", "2026-10-18");
-  for (const key of ["turkce", "sosyal", "matematik", "fen"]) {
-    create.set(`${key}.net`, "999"); create.set(`${key}.average`, "8"); create.set(`${key}.correct`, "11"); create.set(`${key}.incorrect`, "4");
-  }
-  assert.equal((await post("/yks27/admin", create, admin)).status, 303);
-  assert.equal(tables.exams.length, 1);
-  assert.equal(tables.exams[0].pdf_url, null, "PDF is optional");
-  assert.doesNotMatch(await (await get("/yks27/tyt", admin)).text(), /PDF’yi görüntüle/);
-  for (const subject of tables.exams[0].subjects) {
-    assert.deepEqual(Object.keys(subject).sort(), ["average", "correct", "incorrect"], "Only raw subject inputs are persisted; submitted net is ignored");
-  }
-  assert.deepEqual(tables.exams[0].subjects.map(subject => [subject.correct, subject.incorrect]), [[11, 4], [11, 4], [11, 4], [11, 4]]);
-  const examId = tables.exams[0].id;
-  const editHtml = await (await get(`/yks27/admin?edit=${examId}`, admin)).text();
-  const edit = form(editHtml, 'name="name"'); edit.set("name", "Updated private exam"); edit.set("date", "2026-10-19");
-  const pdfUrl = "https://example.test/exam.pdf?token=abc&download=1";
-  edit.set("pdf_url", pdfUrl);
-  for (const key of ["turkce", "sosyal", "matematik", "fen"]) {
-    edit.set(`${key}.correct`, "0"); edit.set(`${key}.incorrect`, key === "fen" ? "20" : "0");
-  }
-  edit.set("turkce.correct", "31"); edit.set("turkce.incorrect", "6");
-  assert.equal((await post("/yks27/admin", edit, admin)).status, 303);
-  assert.equal(tables.exams[0].name, "Updated private exam");
-  assert.equal(tables.exams[0].pdf_url, pdfUrl);
-  assert.deepEqual(tables.exams[0].subjects.map(subject => [subject.correct, subject.incorrect]), [[31, 6], [0, 0], [0, 0], [0, 20]]);
-  assert.ok(tables.exams[0].subjects.every(subject => !("net" in subject) && !("empty" in subject)));
-  const updatedHtml = await (await get(`/yks27/admin?edit=${examId}`, admin)).text();
-  assert.match(updatedHtml, /name="pdf_url"[^>]*value="https:\/\/example.test\/exam.pdf\?token=abc&amp;download=1"/);
-  const turkceFields = updatedHtml.match(/<fieldset[^>]*>[\s\S]*?<\/fieldset>/)?.[0];
-  assert.match(turkceFields, /Boş<input[^>]*readOnly=""[^>]*value="3"/);
-  assert.match(turkceFields, /Net<input[^>]*readOnly=""[^>]*value="29.5"/);
-  adminHtml = await (await get("/yks27/admin", admin)).text();
-  const pinData = form(adminHtml, 'name="label"'); pinData.set("label", "Test viewer"); pinData.set("days", "30");
-  const pinHtml = await (await post("/yks27/admin", pinData, admin)).text();
-  const pin = pinHtml.match(/<output[^>]*>(\d{10})<\/output>/)?.[1];
-  assert.ok(pin, "Generated PIN appears once in action response");
-  assert.notEqual(tables.viewer_pins[0].pin_hash, pin);
-  const viewerLogin = form(loginHtml, 'name="mode"'); viewerLogin.set("mode", "viewer"); viewerLogin.set("pin", pin);
-  const viewer = cookieOf(await post("/yks27/login", viewerLogin));
-  assert.ok(viewer);
-  for (const cookie of [admin, viewer]) {
-    assert.equal((await get("/yks27", cookie)).status, 200);
-    assert.equal((await get("/yks27/ayt", cookie)).status, 200);
-    assert.equal((await get("/yks27/login", cookie)).headers.get("location"), "/yks27");
-  }
-  const listingResponse = await get("/yks27/tyt", viewer);
-  assert.equal(listingResponse.status, 200);
-  const listing = await listingResponse.text();
-  assert.match(listing, /href="\/yks27\/tyt\/dashboard"/);
-  assert.match(listing, /Updated private exam/);
-  assert.match(listing, /href="https:\/\/example.test\/exam.pdf\?token=abc&amp;download=1" target="_blank" rel="noopener noreferrer"/);
-  assert.match(listing, /PDF’yi görüntüle/);
-  for (const label of ["Türkçe", "Sosyal", "Matematik", "Fen", "Doğru", "Yanlış", "Boş", "Net"]) assert.ok(listing.includes(label));
-  const totalRow = listing.match(/<tfoot[\s\S]*?<\/tfoot>/)?.[0];
-  assert.ok(totalRow);
-  const totals = [...totalRow.matchAll(/<td[^>]*>([^<]*)<\/td>/g)].map(match => match[1]);
-  assert.deepEqual(totals, ["120", "31", "26", "63", "24,50", "Veri yok"]);
-  assert.doesNotMatch(listing, /Düzenle|Kayıtlar ve PIN yönetimi/);
-  const chartResponse = await get("/yks27/tyt/dashboard", viewer);
-  assert.equal(chartResponse.status, 200);
-  const charts = await chartResponse.text();
-  assert.match(charts, /Updated private exam/);
-  assert.match(charts, /24,50/, "Charts calculate total net from stored answer counts");
-  assert.match(charts, /Salt okunur/);
-  assert.doesNotMatch(charts, /Kayıtlar ve PIN yönetimi/);
-  assert.equal((await get("/yks27/admin", viewer)).headers.get("location"), "/yks27/tyt");
-  // Replay a real admin mutation as a viewer: the server must reject it.
-  const viewerForgery = await post("/yks27/admin", create, viewer);
-  assert.equal(viewerForgery.status, 303);
-  assert.equal(viewerForgery.headers.get("location"), "/yks27/tyt");
-  assert.equal(tables.exams.length, 1);
-  const privilegedForms = [
-    edit,
-    pinData,
-    form(adminHtml = await (await get("/yks27/admin", admin)).text(), `value="${examId}"`),
-    form(adminHtml, `value="${tables.viewer_pins[0].id}"`),
-  ];
-  const snapshot = JSON.stringify({ exams: tables.exams, pins: tables.viewer_pins });
-  for (const forbidden of privilegedForms) {
-    assert.equal((await post("/yks27/admin", forbidden, viewer)).headers.get("location"), "/yks27/tyt");
-    assert.equal(JSON.stringify({ exams: tables.exams, pins: tables.viewer_pins }), snapshot);
-  }
-  const anonForgery = await post("/yks27/admin", create);
-  assert.equal(anonForgery.headers.get("location"), "/yks27/login");
-  assert.equal(tables.exams.length, 1);
-  edit.set("pdf_url", "");
-  assert.equal((await post("/yks27/admin", edit, admin)).status, 303);
-  assert.equal(tables.exams[0].pdf_url, null, "Clearing the optional URL removes the saved link");
-  assert.doesNotMatch(await (await get("/yks27/tyt", viewer)).text(), /PDF’yi görüntüle/);
-  const expiredSession = tables.app_sessions.find(row => row.role === "viewer");
-  const originalExpiry = expiredSession.expires_at;
-  expiredSession.expires_at = "2000-01-01T00:00:00Z";
-  for (const path of ["/yks27", "/yks27/ayt"]) {
-    assert.equal((await get(path, viewer)).headers.get("location"), "/yks27/login");
-  }
-  assert.equal((await get("/yks27/tyt", viewer)).headers.get("location"), "/yks27/login");
-  assert.equal((await get("/yks27/tyt/dashboard", viewer)).headers.get("location"), "/yks27/login");
-  expiredSession.expires_at = originalExpiry;
-  const originalPinExpiry = tables.viewer_pins[0].expires_at;
-  tables.viewer_pins[0].expires_at = "2000-01-01T00:00:00Z";
-  assert.equal((await get("/yks27/tyt", viewer)).headers.get("location"), "/yks27/login");
-  tables.viewer_pins[0].expires_at = originalPinExpiry;
-  const revoke = form(adminHtml = await (await get("/yks27/admin", admin)).text(), `value="${tables.viewer_pins[0].id}"`);
-  await post("/yks27/admin", revoke, admin);
-  assert.equal(tables.viewer_pins[0].revoked, true);
-  for (const path of ["/yks27", "/yks27/ayt"]) {
-    assert.equal((await get(path, viewer)).headers.get("location"), "/yks27/login");
-  }
-  assert.equal((await get("/yks27/tyt", viewer)).headers.get("location"), "/yks27/login");
-  const remove = form(adminHtml, `value="${examId}"`);
-  await post("/yks27/admin", remove, admin);
-  assert.equal(tables.exams.length, 0);
-  limited = true;
-  assert.match(await (await post("/yks27/login", credentials)).text(), /Çok fazla deneme/);
-  const logout = form(adminHtml, "Çıkış yap");
-  await post("/yks27/admin", logout, admin);
-  assert.equal((await get("/yks27/admin", admin)).headers.get("location"), "/yks27/login");
-  console.log("PASS: anonymous protection, admin login/CRUD, validation, viewer PIN login, server mutation denial, session/PIN expiry, revocation, rate-limit response, logout.");
-} catch (error) {
-  console.error(logs);
-  throw error;
-} finally {
-  child.kill();
-  api.closeAllConnections();
-  api.close();
+function actionResult(text){
+  for(const line of text.split("\n")){
+    const i=line.indexOf(":");if(i<0)continue;
+    try{const v=JSON.parse(line.slice(i+1));if(v?.preview||v?.success||v?.error)return v;if(v?.a&&typeof v.a==="object")return v.a;}catch{/* Other Flight chunks are module references. */}
+  }throw new Error("No action result in production response");
 }
+const examCount=async()=>Number((await db.query("select count(*) n from public.exams")).rows[0].n);
+try{
+  let started=false;for(let i=0;i<100;i++){try{if((await get("/yks27/login")).status===200){started=true;break}}catch{/* starting */}await new Promise(r=>setTimeout(r,100));}assert.ok(started);
+  for(const path of ["/yks27","/yks27/ayt","/yks27/tyt","/yks27/tyt/dashboard","/yks27/admin"])assert.equal((await get(path)).headers.get("location"),"/yks27/login");
+  const loginHtml=await(await get("/yks27/login")).text();
+  const credentials=form(loginHtml,'name="mode"');credentials.set("mode","admin");credentials.set("email","admin@example.test");credentials.set("password","wrong");
+  assert.equal(cookieOf(await post("/yks27/login",credentials)),undefined);credentials.set("password","test-password");
+  const signedIn=await post("/yks27/login",credentials),admin=cookieOf(signedIn);assert.ok(admin);assert.match(signedIn.headers.get("set-cookie"),/HttpOnly/i);assert.match(signedIn.headers.get("set-cookie"),/Secure/i);
+  let html=await(await get("/yks27/admin",admin)).text();assert.match(html,/PDF’den deneme ekle/);assert.doesNotMatch(html,/name="turkce.correct"|name="pdf_url"/);
+  const pinData=form(html,'name="label"');pinData.set("label","Test viewer");pinData.set("days","30");
+  const pinHtml=await(await post("/yks27/admin",pinData,admin)).text(),pin=pinHtml.match(/<output[^>]*>(\d{10})<\/output>/)?.[1];assert.ok(pin);
+  const viewerData=form(loginHtml,'name="mode"');viewerData.set("mode","viewer");viewerData.set("pin",pin);const viewer=cookieOf(await post("/yks27/login",viewerData));assert.ok(viewer);
+  assert.equal((await get("/yks27/admin",viewer)).headers.get("location"),"/yks27/tyt");
+  for(const cookie of ["",viewer]){const r=await upload("qksssu3nm_.pdf",cookie);assert.ok([200,303].includes(r.status));assert.ok(r.headers.get("x-action-redirect")?.startsWith(cookie ? "/yks27/tyt;" : "/yks27/login;"));assert.equal(await examCount(),0);}
+  const preview=actionResult(await(await upload("qksssu3nm_.pdf",admin)).text()).preview;assert.equal(preview.exam.total_net,67.25);assert.equal(preview.questionCount,120);assert.ok(preview.receipt);assert.equal(await examCount(),0);assert.equal(Number((await db.query("select count(*) n from public.topics")).rows[0].n),0,"Preview creates no topics");
+  const forged=actionResult(await(await upload("u6krt_69xh.pdf",admin,"confirm",preview.receipt)).text());assert.match(forged.error,/Önizleme/);assert.equal(await examCount(),0);
+  const confirmed=actionResult(await(await upload("qksssu3nm_.pdf",admin,"confirm",preview.receipt)).text());assert.match(confirmed.success,/120 soru/);assert.ok(confirmed.reviewTopics.length);assert.equal(await examCount(),1);
+  assert.match(actionResult(await(await upload("qksssu3nm_.pdf",admin,"confirm",preview.receipt)).text()).success,/zaten kayıtlı/);assert.equal(await examCount(),1);
+  assert.match(actionResult(await(await upload("5ade3e51cd986a20854fff3770ec091034061db5.pdf",admin)).text()).error,/iptal/);
+  assert.equal((await upload("qksssu3nm_.pdf",admin,"confirm",preview.receipt,"https://untrusted.example")).status,500);assert.equal(await examCount(),1);
+  for(const cookie of [admin,viewer]){const listing=await(await get("/yks27/tyt",cookie)).text();assert.match(listing,/HIZ VE RENK/);assert.match(listing,/67,25/);assert.match(listing,/66,24/);assert.doesNotMatch(listing,/PDF’yi görüntüle/);assert.match(await(await get("/yks27/tyt/dashboard",cookie)).text(),/67,25/);}
+  reads.clear();await(await get("/yks27/tyt",viewer)).text();
+  assert.equal(reads.get("app_sessions"),1,"Session lookup is deduplicated within a server render");
+  assert.equal(reads.get("viewer_pins"),1,"PIN lookup is deduplicated within a server render");
+  const row=(await db.query("select id from public.exams")).rows[0];html=await(await get("/yks27/admin",admin)).text();
+  const remove=form(html,`value="${row.id}"`);assert.equal((await post("/yks27/admin",remove,viewer)).headers.get("location"),"/yks27/tyt");assert.equal(await examCount(),1);assert.equal((await post("/yks27/admin",remove)).headers.get("location"),"/yks27/login");
+  await post("/yks27/admin",remove,admin);assert.equal(await examCount(),0);assert.equal(Number((await db.query("select count(*) n from public.exam_questions")).rows[0].n),0);
+  await db.exec("update public.app_sessions set expires_at=now()-interval '1 hour' where role='viewer'");
+  assert.equal((await get("/yks27/tyt",viewer)).headers.get("location"),"/yks27/login");
+  await db.exec("update public.app_sessions set expires_at=now()+interval '1 hour' where role='viewer';update public.viewer_pins set expires_at=now()-interval '1 hour'");
+  assert.equal((await get("/yks27/tyt",viewer)).headers.get("location"),"/yks27/login");
+  await db.exec("update public.viewer_pins set expires_at=now()+interval '1 hour'");
+  const pinRow=(await db.query("select id from public.viewer_pins limit 1")).rows[0];await post("/yks27/admin",form(html,`value="${pinRow.id}"`),admin);assert.equal((await get("/yks27/tyt",viewer)).headers.get("location"),"/yks27/login");
+  limited=true;assert.match(await(await post("/yks27/login",credentials)).text(),/Çok fazla/);limited=false;
+  await post("/yks27/admin",form(html,"Çıkış yap"),admin);assert.equal((await get("/yks27/admin",admin)).headers.get("location"),"/yks27/login");
+  async function inspect(dir){for(const e of await readdir(dir,{withFileTypes:true})){const path=join(dir,e.name);if(e.isDirectory())await inspect(path);else if(path.endsWith(".js"))assert.ok(!(await readFile(path,"utf8")).includes(key),"Server credential in client bundle");}}await inspect(".next/static");
+  console.log("PASS: production PDF preview/confirmation, authorization, tamper/CSRF denial, duplicates, cancelled reports, listings/charts, topic warnings, cascading deletion, PIN revocation, rate limit, logout, client secret check.");
+}catch(error){console.error(logs);throw error;}finally{child.kill();api.closeAllConnections();await new Promise(r=>api.close(r));await db.close();}
