@@ -37,9 +37,10 @@ export default async function Tyt() {
 
       <p className="mb-4 text-xs leading-6 text-muted sm:hidden">Tüm sütunları görmek için tabloyu yana kaydır. Net = doğru − yanlış / 4.</p><div className="space-y-6">{exams.map(exam => <article key={exam.id} aria-labelledby={`exam-${exam.id}`} className="overflow-hidden rounded-xl border border-border bg-surface">
         <header className="flex flex-wrap items-center justify-between gap-4 border-b border-border px-4 py-5 sm:px-6">
-          <div className="min-w-0"><h2 id={`exam-${exam.id}`} className="break-words text-lg font-semibold">{exam.name}</h2><p className="mt-2 text-xs text-muted">{dateLabel(exam.date)}{(exam.rank !== null || exam.participants !== null) && <> · Sıralama: {number(exam.rank, 0)} / {number(exam.participants, 0)}</>}</p></div>
+          <div className="min-w-0"><h2 id={`exam-${exam.id}`} className="break-words text-lg font-semibold"><Link href={`/yks27/tyt/${exam.id}`} prefetch={false} className="hover:underline">{exam.name}</Link></h2><p className="mt-2 text-xs text-muted">{dateLabel(exam.date)}{(exam.rank !== null || exam.participants !== null) && <> · Sıralama: {number(exam.rank, 0)} / {number(exam.participants, 0)}</>}</p></div>
           <div className="flex flex-wrap items-center gap-2">
-            {current.role === "admin" && <Link href={`/yks27/admin?edit=${exam.id}`} className="rounded-lg border border-border px-3 py-2 text-xs hover:bg-surface-muted">Düzenle</Link>}
+            <Link href={`/yks27/tyt/${exam.id}`} prefetch={false} aria-label={`${exam.name}: Detayları Gör`} className="inline-flex items-center rounded-lg border border-border px-3 py-2 text-xs text-accent hover:bg-surface-muted">Detayları Gör</Link>
+            {current.role === "admin" && <Link href={`/yks27/admin?edit=${exam.id}`} className="inline-flex items-center justify-center rounded-lg border border-border px-3 py-2 text-center text-xs hover:bg-surface-muted">Düzenle</Link>}
           </div>
         </header>
         <div className="overflow-x-auto" role="region" aria-label={`${exam.name} sonuçları`} tabIndex={0}>

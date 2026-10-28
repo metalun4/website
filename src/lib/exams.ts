@@ -3,6 +3,17 @@ import { db } from "./storage";
 import { requireSession } from "./session";
 import type { Exam } from "@/app/yks27/tyt/data";
 import type { SubjectResult, Ranking } from "./exam-import/types";
+import { isExamId, type ExamDetail } from "./exam-detail";
+
+export async function getTytExamDetail(examId: string): Promise<ExamDetail | null> {
+  await requireSession();
+  if (!isExamId(examId)) return null;
+  // Both topic_id and (topic_id, subject_id) reference topics: select the
+  // single-column relationship explicitly to avoid PostgREST ambiguity.
+  const select = "id,name,exam_date,institution_name,class_label,score,total_questions,total_correct,total_wrong,total_blank,total_net,average_net,exam_subject_results(subject_id,result_scope,question_count,correct_count,wrong_count,blank_count,net,average_net,subject:subjects(id,name,parent_id,display_order)),exam_rankings(scope,rank,participant_count),exam_questions(id,subject_id,question_number,correct_answer,selected_answer,solution_url,topic:topics!exam_questions_topic_id_fkey(name,needs_review))";
+  const rows = await db<ExamDetail[]>(`exams?id=eq.${encodeURIComponent(examId)}&exam_type=eq.TYT&select=${select}&limit=1`);
+  return rows[0] ?? null;
+}
 
 type ExamSummary = {
   id: string; name: string; exam_date: string; average_net: number | null;
