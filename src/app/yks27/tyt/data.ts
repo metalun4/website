@@ -80,3 +80,40 @@ export function number(value: number | null, decimals = 2, signed = false) {
 }
 const dateFormatter = new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "UTC" });
 export const dateLabel = (date: string) => dateFormatter.format(new Date(`${date}T00:00:00Z`));
+
+const finite = (value: number | null | undefined): value is number => typeof value === "number" && Number.isFinite(value);
+
+/** SMA-3. A point exists only when that result and the previous two are finite; missing values stay missing. */
+export function movingAverage3(values: readonly (number | null)[]): (number | null)[] {
+  return values.map((_, index) => {
+    if (index < 2) return null;
+    const first = values[index - 2];
+    const second = values[index - 1];
+    const third = values[index];
+    if (!finite(first) || !finite(second) || !finite(third)) return null;
+    return (first + second + third) / 3;
+  });
+}
+
+/** Applies the shared 5 / 10 / all window after a full-history calculation. */
+export function visibleSlice<T>(values: readonly T[], range: string): T[] {
+  return range === "5" || range === "10" ? values.slice(-Number(range)) : values.slice();
+}
+
+/** Fixed domains stay exact when they contain the data. Otherwise the overflowing side grows so points are not clipped. */
+export function chartYDomain(samples: readonly (number | null)[], fixed?: readonly [number, number], reference?: number): [number, number] {
+  let low = Infinity;
+  let high = -Infinity;
+  const consider = (value: number | null | undefined) => {
+    if (!finite(value)) return;
+    if (value < low) low = value;
+    if (value > high) high = value;
+  };
+  for (const sample of samples) consider(sample);
+  consider(reference);
+  if (!finite(low) || !finite(high)) return fixed ? [fixed[0], fixed[1]] : [0, 1];
+  if (fixed && low >= fixed[0] && high <= fixed[1]) return [fixed[0], fixed[1]];
+  const pad = Math.max((high - low) * 0.12, 1);
+  if (!fixed) return [low - pad, high + pad];
+  return [low < fixed[0] ? low - pad : fixed[0], high > fixed[1] ? high + pad : fixed[1]];
+}

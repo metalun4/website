@@ -6,8 +6,9 @@ import { queryValue, type Query } from "@/lib/yks-navigation";
 import { yks26Tyt, yks26TytNet, yks26TytOutperformed } from "@/lib/yks26-tyt";
 import { AccountBar } from "../account-bar";
 import { LazyDetails } from "../../lazy-details";
-import Chart, { type Series } from "../chart";
-import { dateLabel, difference, calculateExam, number, subjects } from "../data";
+import { AdvancedAnalytics } from "../analytics";
+import Chart from "../chart";
+import { dateLabel, difference, calculateExam, movingAverage3, number, subjects, visibleSlice } from "../data";
 
 export const metadata: Metadata = {
   title: "TYT Gelişim Paneli | YKS 2027",
@@ -16,10 +17,6 @@ export const metadata: Metadata = {
 };
 export const dynamic = "force-dynamic";
 
-function Section({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {
-  return <section className="mt-8" aria-label={title}><h2 className="text-xl font-semibold">{title}</h2><p className="mt-2 mb-4 leading-6 text-muted">{description}</p><div className="grid gap-4 lg:grid-cols-2">{children}</div></section>;
-}
-
 export default async function TytDashboard({ searchParams }: { searchParams: Promise<Query> }) {
   const query = await searchParams;
   const range = ["5", "10"].includes(queryValue(query.range)) ? queryValue(query.range) : "all";
@@ -27,11 +24,11 @@ export default async function TytDashboard({ searchParams }: { searchParams: Pro
   const all = (await getExams()).map(exam => ({ ...calculateExam(exam), id: exam.id }));
   const latest = all.at(-1), previous = all.at(-2);
   if (!latest) return <main className="yks-page"><div className="mx-auto max-w-7xl"><AccountBar admin={current.role === "admin"} /><h1 id="yks-content" tabIndex={-1} className="text-2xl font-semibold">Henüz deneme kaydı yok</h1><p className="mt-3 text-muted">İlk deneme eklendiğinde gelişim grafiklerin burada görünecek.</p><Link href={current.role === "admin" ? "/yks27/admin" : "/yks27/tyt"} className="yks-button mt-5">{current.role === "admin" ? "İlk denemeyi ekle" : "TYT denemelerine git"}</Link></div></main>;
-  const exams = range === "all" ? all : all.slice(-Number(range));
-  // Every chart shares only the metadata it actually renders at the client boundary.
+  const exams = visibleSlice(all, range);
+  // SMA-3 uses the full chronological history; the shared range filter only hides exams.
+  const trend = visibleSlice(movingAverage3(all.map(exam => exam.net)), range);
   const chartExams = exams.map(({ id, name, date }) => ({ id, name, date }));
-  const overall = (key: "net" | "average" | "outperformed" | "index" | "accuracy" | "dps", label: string, color = "var(--chart-primary)"): Series => ({ label, color, values: exams.map(e => e[key]) });
-  const bySubject = (key: "relative" | "index" | "accuracy" | "dps"): Series[] => subjects.map((s, i) => ({ label: s.label, color: s.color, values: exams.map(e => e.subjects[i][key]) }));
+  const bySubject = (key: "relative" | "index" | "accuracy" | "dps") => subjects.map((_, index) => exams.map(exam => exam.subjects[index][key]));
   const cards = [
     { label: "Son toplam net", value: number(latest.net), detail: "120 soru üzerinden", featured: true },
     { label: "Önceki denemeye göre", value: previous ? number(difference(latest.net, previous.net), 2, true) : "—", detail: previous ? `${dateLabel(previous.date)} tarihine göre` : "İlk denemen" },
@@ -57,27 +54,27 @@ export default async function TytDashboard({ searchParams }: { searchParams: Pro
       </div>
     </section>
     <section className="my-7" aria-labelledby="subject-heading"><div className="mb-3 flex flex-wrap items-center justify-between gap-3"><h2 id="subject-heading" className="text-lg font-semibold">Son denemede derslerin</h2><Link href={`/yks27/tyt/${latest.id}#konu-analizi`} className="inline-flex items-center text-accent hover:underline">Soru analizini incele →</Link></div><dl className="grid grid-cols-2 gap-3 md:grid-cols-4">{subjects.map((subject, i) => <div key={subject.key} className="yks-panel"><dt className="text-sm text-muted">{subject.label}</dt><dd className="mt-2 text-2xl font-semibold tabular-nums">{number(latest.subjects[i].net)} <span className="text-xs font-normal text-muted">/ {subject.questions} net</span></dd><p className="mt-2 text-xs text-muted">{number(latest.subjects[i].correct, 0)} doğru · {number(latest.subjects[i].incorrect, 0)} yanlış · {number(latest.subjects[i].empty, 0)} boş</p></div>)}</dl></section>
-    <section aria-labelledby="trend-heading" className="mb-7">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3"><h2 id="trend-heading" className="text-lg font-semibold">Net gelişimi</h2><nav aria-label="Grafik dönemi" className="flex flex-wrap gap-2">{[{ value: "5", label: "Son 5" }, { value: "10", label: "Son 10" }, { value: "all", label: "Tümü" }].map(item => <Link key={item.value} href={`?range=${item.value}`} scroll={false} aria-current={range === item.value ? "true" : undefined} className={`inline-flex min-h-11 items-center rounded-lg border px-3 text-sm ${range === item.value ? "border-accent bg-accent-soft font-semibold text-accent" : "border-border hover:bg-surface-muted"}`}>{item.label}</Link>)}</nav></div>
-      <p className="mb-3 text-xs text-muted">{exams.length} / {all.length} deneme · {dateLabel(exams[0].date)} — {dateLabel(latest.date)}</p>
-      <Chart exams={chartExams} title="Toplam net ve sınav ortalaması" description="Her denemede netin ile o sınavın katılımcı ortalamasını karşılaştır." unit=" net" series={[overall("net", "Toplam net"), overall("average", "Sınav ortalaması", "var(--chart-secondary)")]} />
-    </section>
-    <LazyDetails label="Ayrıntılı analiz · Sıralama, doğruluk ve DPS">
-      <Section title="Sınav ortalamasına göre performans" description="Katılımcı grupları ve sınavların zorluğu değişebilir. Bu değerler her sınavın kendi ortalamasına göre karşılaştırmadır.">
-        <Chart exams={chartExams} title="Geride bırakılan katılımcı oranı" description="Bu sınavın katılımcıları arasındaki konumun." unit="%" domain={[0, 100]} series={[overall("outperformed", "Geride bırakılan")]} />
-        <Chart exams={chartExams} title="Performans endeksi" description="Net / sınav ortalaması × 100. Kesikli çizgi sınav ortalamasıdır." reference={100} series={[overall("index", "Performans endeksi")]} />
-        <Chart exams={chartExams} title="Ders bazında göreli net" description="Ders netin − ders ortalaması. Pozitif değerler ortalamanın üstündedir." unit=" net" reference={0} series={bySubject("relative")} />
-        <Chart exams={chartExams} title="Ders performans endeksi" description="Ders neti / ders ortalaması × 100." reference={100} series={bySubject("index")} />
-      </Section>
-      <Section title="Doğruluk" description="Doğru / (doğru + yanlış) × 100. Boş sorular bu orana dahil değildir.">
-        <Chart exams={chartExams} title="Genel doğruluk" description="İşaretlediğin soruların doğru cevaplanma oranı." unit="%" domain={[0, 100]} series={[overall("accuracy", "Genel doğruluk")]} />
-        <Chart exams={chartExams} title="Ders bazında doğruluk" description="Her dersin kendi doğru ve yanlış sayılarına göre." unit="%" domain={[0, 100]} series={bySubject("accuracy")} />
-      </Section>
-      <Section title="DPS · Dengeli performans skoru" description="Doğruluk ve işaretlenen soru oranını birlikte gösterir. DPS resmi sınav puanı değildir.">
-        <Chart exams={chartExams} title="Genel DPS (0–100)" description="Doğruluk ile işaretleme oranının harmonik ortalaması." domain={[0, 100]} series={[overall("dps", "Genel DPS")]} />
-        <Chart exams={chartExams} title="Ders bazında DPS (0–100)" description="Türkçe 40 · Sosyal 20 · Matematik 40 · Fen 20 soru üzerinden." domain={[0, 100]} series={bySubject("dps")} />
-        <p className="col-span-full text-xs leading-6 text-muted">DPS = 200 × doğruluk × işaretleme oranı / (doğruluk + işaretleme oranı). Oranlar 0–1 aralığında kullanılır.</p>
-      </Section>
-    </LazyDetails>
+    <div className="w-full min-w-0">
+      <section aria-labelledby="trend-heading" className="mb-7">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3"><h2 id="trend-heading" className="text-lg font-semibold">Net gelişimi</h2><nav aria-label="Grafik dönemi" className="flex flex-wrap gap-2">{[{ value: "5", label: "Son 5" }, { value: "10", label: "Son 10" }, { value: "all", label: "Tümü" }].map(item => <Link key={item.value} href={`?range=${item.value}`} scroll={false} aria-current={range === item.value ? "true" : undefined} className={`inline-flex min-h-11 items-center rounded-lg border px-3 text-sm ${range === item.value ? "border-accent bg-accent-soft font-semibold text-accent" : "border-border hover:bg-surface-muted"}`}>{item.label}</Link>)}</nav></div>
+        <p className="mb-3 text-xs text-muted">{exams.length} / {all.length} deneme · {dateLabel(exams[0].date)} — {dateLabel(latest.date)}</p>
+        <Chart exams={chartExams} title="Toplam net ve sınav ortalaması" description="Her denemede netin ile o sınavın katılımcı ortalamasını karşılaştır." unit=" net" series={[{ label: "Toplam net", color: "var(--chart-primary)", values: exams.map(exam => exam.net) }, { label: "Sınav ortalaması", color: "var(--chart-secondary)", values: exams.map(exam => exam.average) }]} />
+      </section>
+      <LazyDetails label="Ayrıntılı analiz · Performans, doğruluk ve DPS">
+        <AdvancedAnalytics
+          exams={chartExams}
+          net={exams.map(exam => exam.net)}
+          trend={trend}
+          outperformed={exams.map(exam => exam.outperformed)}
+          performanceIndex={exams.map(exam => exam.index)}
+          relative={bySubject("relative")}
+          subjectIndex={bySubject("index")}
+          accuracy={exams.map(exam => exam.accuracy)}
+          subjectAccuracy={bySubject("accuracy")}
+          dps={exams.map(exam => exam.dps)}
+          subjectDps={bySubject("dps")}
+        />
+      </LazyDetails>
+    </div>
   </div></main>;
 }
