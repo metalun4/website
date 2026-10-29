@@ -5,6 +5,20 @@ import { ExternalLink } from "lucide-react";
 import { filterQuestions, questionStatus, statusLabels, type QuestionGroup, type QuestionFilter } from "@/lib/exam-detail";
 import { safePdfUrl } from "@/lib/pdf-url";
 
+function QuestionRow({ subject, question }: { subject: string; question: QuestionGroup["questions"][number] }) {
+  const status = questionStatus(question);
+  const url = safePdfUrl(question.solution_url);
+  return <tr data-question={`${question.subject_id}-${question.question_number}`}>
+    <th scope="row" data-cell="number" className="font-medium tabular-nums"><span className="md:hidden">Soru </span>{question.question_number}</th>
+    <td data-cell="subject">{subject}</td>
+    <td data-cell="topic" className="max-w-sm break-words">{question.topic.name}{question.topic.needs_review ? <span className="mt-1 block text-xs text-muted">Konu adı inceleme bekliyor</span> : null}</td>
+    <td data-cell="correct" className="text-sm"><span className="text-muted md:hidden">Doğru cevap: </span>{question.correct_answer}</td>
+    <td data-cell="selected" className="text-sm"><span className="text-muted md:hidden">Cevabın: </span>{question.selected_answer ?? "—"}</td>
+    <td data-cell="status" className={`font-medium ${status === "correct" ? "text-green-700 dark:text-green-400" : status === "incorrect" ? "text-red-700 dark:text-red-400" : ""}`}>{status === "cancelled" ? "İptal · Doğru sayıldı" : statusLabels[status]}</td>
+    <td data-cell="solution">{url ? <a href={url} target="_blank" rel="noopener noreferrer" aria-label={`${subject} ${question.question_number}. soru: Çözümü aç (yeni sekme)`} className="inline-flex items-center gap-2 text-accent hover:underline">Çözümü aç<ExternalLink size={14} aria-hidden="true" /></a> : <span className="inline-flex min-h-11 items-center text-muted">Bağlantı yok</span>}</td>
+  </tr>;
+}
+
 export function QuestionAnalysis({ groups }: { groups: QuestionGroup[] }) {
   const search = useSearchParams();
   const rawFilter = search?.get("result") ?? "all";
@@ -41,17 +55,7 @@ export function QuestionAnalysis({ groups }: { groups: QuestionGroup[] }) {
         <table className="yks-question-table"><caption className="sr-only">{group.subject.name} soru ve konu analizi</caption>
           <colgroup>{[6, 18, 30, 7, 7, 16, 16].map((width, i) => <col key={i} style={{ width: `${width}%` }} />)}</colgroup>
           <thead><tr>{["No", "Ders", "Konu", "DC", "ÖC", "Sonuç", "Çözüm"].map(label => <th key={label} scope="col">{label}</th>)}</tr></thead>
-          <tbody>{group.filtered.map(question => {
-            const status = questionStatus(question);
-            const url = safePdfUrl(question.solution_url);
-            return <tr key={question.id} data-question={`${question.subject_id}-${question.question_number}`}>
-              <th scope="row" data-cell="number" className="font-medium tabular-nums"><span className="md:hidden">Soru </span>{question.question_number}</th><td data-cell="subject">{group.subject.name}</td>
-              <td data-cell="topic" className="max-w-sm break-words">{question.topic.name}{question.topic.needs_review && <span className="mt-1 block text-xs text-muted">Konu adı inceleme bekliyor</span>}</td>
-              <td data-cell="correct" className="text-sm"><span className="text-muted md:hidden">Doğru cevap: </span>{question.correct_answer}</td><td data-cell="selected" className="text-sm"><span className="text-muted md:hidden">Cevabın: </span>{question.selected_answer ?? "—"}</td>
-              <td data-cell="status" className={`font-medium ${status === "correct" ? "text-green-700 dark:text-green-400" : status === "incorrect" ? "text-red-700 dark:text-red-400" : ""}`}>{status === "cancelled" ? "İptal · Doğru sayıldı" : statusLabels[status]}</td>
-              <td data-cell="solution">{url ? <a href={url} target="_blank" rel="noopener noreferrer" aria-label={`${group.subject.name} ${question.question_number}. soru: Çözümü aç (yeni sekme)`} className="inline-flex items-center gap-2 text-accent hover:underline">Çözümü aç<ExternalLink size={14} aria-hidden="true" /></a> : <span className="inline-flex min-h-11 items-center text-muted">Bağlantı yok</span>}</td>
-            </tr>;
-          })}</tbody>
+          <tbody>{group.filtered.map(question => <QuestionRow key={question.id} subject={group.subject.name} question={question} />)}</tbody>
         </table>
       </div>}
     </details>)}</div>

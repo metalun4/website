@@ -6,7 +6,7 @@ import { getTytExamDetail } from "@/lib/exams";
 import { groupQuestions, groupResults, rankingLabels } from "@/lib/exam-detail";
 import { queryValue, type Query } from "@/lib/yks-navigation";
 import { AccountBar } from "../account-bar";
-import { dateLabel, number } from "../data";
+import { dateLabel, formatPercent, number } from "../data";
 import { QuestionAnalysis } from "./question-analysis";
 
 export const metadata: Metadata = { title: "TYT Deneme Detayı | YKS 2027", description: "TYT denemesinin ders sonuçları, sıralamaları ve soru bazında konu analizi.", robots: { index: false, follow: false } };
@@ -48,7 +48,7 @@ export default async function ExamPage({ params, searchParams }: { params: Promi
     </section>
     <section id="siralamalar" aria-labelledby="rankings-heading" className="mt-8 scroll-mt-6 rounded-xl border border-border bg-surface"><h2 id="rankings-heading" className="px-4 pt-4 text-lg font-semibold">Sıralamalar</h2><p className="px-4 pt-2 pb-4 text-xs leading-6 text-muted">Yüzdelik dilim = sıra / katılımcı sayısı × 100. Daha düşük değer daha iyi sıralamayı gösterir.</p><dl className="grid grid-cols-2 gap-3 border-t border-border p-4 lg:grid-cols-4">{Object.entries(rankingLabels).map(([scope, label]) => {
       const ranking = exam.exam_rankings.find(row => row.scope === scope);
-      return <div key={scope} className="min-w-0 p-2"><dt className="text-sm text-muted">{label}</dt><dd className="mt-2 font-semibold tabular-nums">{ranking ? <>{number(ranking.rank, 0)}. <span className="font-normal text-muted">/ {number(ranking.participant_count, 0)} kişi</span>{ranking.participant_count > 0 && <span className="mt-2 block text-sm text-accent">Yüzdelik dilim: {new Intl.NumberFormat("tr-TR", { style: "percent", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(ranking.rank / ranking.participant_count)}</span>}</> : "Veri yok"}</dd></div>;
+      return <div key={scope} className="min-w-0 p-2"><dt className="text-sm text-muted">{label}</dt><dd className="mt-2 font-semibold tabular-nums">{ranking ? <>{number(ranking.rank, 0)}. <span className="font-normal text-muted">/ {number(ranking.participant_count, 0)} kişi</span>{ranking.participant_count > 0 && <span className="mt-2 block text-sm text-accent">Yüzdelik dilim: {formatPercent(ranking.rank / ranking.participant_count)}</span>}</> : "Veri yok"}</dd></div>;
     })}</dl></section>
     <div className="mt-9"><QuestionAnalysis groups={groupQuestions(exam.exam_subject_results, exam.exam_questions)} /></div>
   </div></main>;

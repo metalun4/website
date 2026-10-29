@@ -72,12 +72,28 @@ export function calculateExam(exam: Exam) {
   };
 }
 
-export function number(value: number | null, decimals = 2, signed = false) {
-  return value === null ? "Veri yok" : new Intl.NumberFormat("tr-TR", {
-    minimumFractionDigits: decimals, maximumFractionDigits: decimals,
-    signDisplay: signed ? "exceptZero" : "auto",
-  }).format(value);
+const formatters = new Map<string, Intl.NumberFormat>();
+
+function numberFormatter(decimals: number, signed: boolean) {
+  const key = `${decimals}:${signed ? 1 : 0}`;
+  let cached = formatters.get(key);
+  if (!cached) {
+    cached = new Intl.NumberFormat("tr-TR", {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+      signDisplay: signed ? "exceptZero" : "auto",
+    });
+    formatters.set(key, cached);
+  }
+  return cached;
 }
+
+export function number(value: number | null, decimals = 2, signed = false) {
+  return value === null ? "Veri yok" : numberFormatter(decimals, signed).format(value);
+}
+
+const percentFormatter = new Intl.NumberFormat("tr-TR", { style: "percent", minimumFractionDigits: 2, maximumFractionDigits: 2 });
+export const formatPercent = (ratio: number) => percentFormatter.format(ratio);
 const dateFormatter = new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "UTC" });
 export const dateLabel = (date: string) => dateFormatter.format(new Date(`${date}T00:00:00Z`));
 
