@@ -459,16 +459,56 @@ a.yks-featured:hover { background: var(--surface-muted); }
 .yks-advanced > div { padding: 0 12px 12px; }
 @media (max-width: 767px) {
   .yks-page { --yks-gutter: 12px; }
-  .yks-question-table { display: block; min-width: 0; }
+  .yks-question-table {
+    display: block;
+    min-width: 0;
+    text-align: left;
+  }
   .yks-question-table colgroup { display: none; }
-  .yks-question-table thead { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .yks-question-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
   .yks-question-table tbody { display: block; }
-  .yks-question-table tbody tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 8px; padding: 8px; }
-  .yks-question-table tbody :is(th, td) { padding: 0; min-width: 0; }
+  .yks-question-table tbody tr {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px 12px;
+    padding: 12px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .yks-question-table tbody :is(th, td) {
+    padding: 0;
+    min-width: 0;
+    text-align: left;
+  }
   .yks-question-table [data-cell="subject"] { display: none; }
-  .yks-question-table [data-cell="topic"] { grid-column: 1 / -1; grid-row: 2; overflow-wrap: anywhere; }
-  .yks-question-table [data-cell="status"] { grid-column: 2; grid-row: 1; }
-  .yks-question-table [data-cell="solution"] { grid-column: 1 / -1; }
+  .yks-question-table [data-cell="topic"] {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    font-weight: 500;
+    margin-block: 4px 2px;
+    overflow-wrap: anywhere;
+  }
+  .yks-question-table [data-cell="status"] {
+    grid-column: 2;
+    grid-row: 1;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .yks-question-table tbody tr > :nth-child(4),
+  .yks-question-table tbody tr > :nth-child(5) {
+    font-size: 0.875rem;
+  }
+  .yks-question-table [data-cell="solution"] {
+    grid-column: 1 / -1;
+    margin-top: 4px;
+  }
 }
 .yks details > summary { list-style: none; }
 .yks details > summary::-webkit-details-marker { display: none; }
