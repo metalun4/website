@@ -3,15 +3,33 @@
   "regions": ["lhr1"],
   "redirects": [
     {
+      "source": "/",
+      "has": [{ "type": "host", "value": "www.aydemir.website" }],
+      "destination": "https://aydemir.website/",
+      "permanent": true
+    },
+    {
       "source": "/:path*",
       "has": [{ "type": "host", "value": "www.aydemir.website" }],
       "destination": "https://aydemir.website/:path*",
       "permanent": true
     },
     {
+      "source": "/",
+      "has": [{ "type": "host", "value": "baris.aydemir.website" }],
+      "destination": "https://aydemir.website/",
+      "permanent": true
+    },
+    {
       "source": "/:path*",
       "has": [{ "type": "host", "value": "baris.aydemir.website" }],
       "destination": "https://aydemir.website/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "www.baris.aydemir.website" }],
+      "destination": "https://aydemir.website/",
       "permanent": true
     },
     {
