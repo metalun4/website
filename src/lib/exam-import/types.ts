@@ -29,5 +29,5 @@ export class ImportError extends Error {
   constructor(public readonly code: string, message: string) { super(message); this.name = "ImportError"; }
 }
 export type Topic = { id: string; subject_id: string; name: string; normalized_name: string; needs_review: boolean };
-export type ImportResult = { status: "imported" | "duplicate" | "collision"; exam_id: string | null; review_topics: Topic[] };
-export type Preview = Omit<ParsedExam, "questions"> & { questionCount: number; linkCount: number; reviewTopics: string[]; receipt: string; duplicate: boolean; collision: boolean };
+export type ImportResult = { status: "imported" | "duplicate" | "collision"; exam_id: string | null; review_topics: Topic[]; unassigned_topics?: Topic[] };
+export type Preview = Omit<ParsedExam, "questions"> & { questionCount: number; linkCount: number; reviewTopics: string[]; unassignedLabels: string[]; receipt: string; duplicate: boolean; collision: boolean };

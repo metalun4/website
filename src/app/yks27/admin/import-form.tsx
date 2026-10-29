@@ -53,13 +53,19 @@ function ImportReview({ file, onBusy }: { file: File | null; onBusy: (busy: bool
       <ul>{preview.rankings.map(r => <li key={r.scope}>{scopeNames[r.scope]}: {number(r.rank, 0)} / {number(r.participant_count, 0)}</li>)}</ul>
       {preview.warnings.map(w => <p key={w} className="text-muted">{w}</p>)}
       <ReviewLabels labels={preview.reviewTopics} />
+      <UnassignedLabels labels={preview.unassignedLabels} />
       {preview.duplicate && <p role="status">Bu rapor zaten kayıtlı. Onaylandığında mevcut kayıt korunur.</p>}
       {preview.collision && <p role="alert" className="text-red-600 dark:text-red-400">Mevcut bir sınavla olası çakışma bulundu. Tarihi ve sonuçları karşılaştırın; çakışma giderilmeden içe aktarılamaz.</p>}
       <input type="hidden" name="receipt" value={preview.receipt} />
       <button name="mode" value="confirm" disabled={pending || preview.collision} className={button}>{preview.duplicate ? "Mevcut kaydı doğrula" : "Onayla ve içe aktar"}</button>
     </section>}
     {state.reviewTopics && <ReviewLabels labels={state.reviewTopics.map(t => `${SUBJECTS.find(s => s.id === t.subject_id)?.name ?? t.subject_id}: ${t.name}`)} />}
+    {state.unassignedTopics && <UnassignedLabels labels={state.unassignedTopics.map(t => `${SUBJECTS.find(s => s.id === t.subject_id)?.name ?? t.subject_id}: ${t.name}`)} />}
   </form>;
+}
+function UnassignedLabels({ labels }: { labels: string[] }) {
+  if (!labels.length) return null;
+  return <details className="rounded-lg border border-border p-3"><summary className="min-h-6 cursor-pointer font-medium">Gruba bağlanmayan konular ({labels.length})</summary><p className="my-2 text-muted">Bu etiketler olduğu gibi saklanır. Konu yönetiminden bir gruba bağlayabilirsin.</p><ul className="list-inside list-disc space-y-1">{labels.map(label => <li key={label} className="break-words">{label}</li>)}</ul><Link href="/yks27/admin/topics" className="mt-2 inline-flex text-accent hover:underline">Konu yönetimine git</Link></details>;
 }
 function ReviewLabels({ labels }: { labels: string[] }) {
   if (!labels.length) return null;

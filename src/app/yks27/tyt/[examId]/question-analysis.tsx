@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ExternalLink } from "lucide-react";
 import { filterQuestions, questionStatus, statusLabels, type QuestionGroup, type QuestionFilter } from "@/lib/exam-detail";
@@ -8,10 +9,10 @@ import { safePdfUrl } from "@/lib/pdf-url";
 function QuestionRow({ subject, question }: { subject: string; question: QuestionGroup["questions"][number] }) {
   const status = questionStatus(question);
   const url = safePdfUrl(question.solution_url);
-  return <tr data-question={`${question.subject_id}-${question.question_number}`}>
+  return <tr id={`soru-${question.subject_id}-${question.question_number}`} data-question={`${question.subject_id}-${question.question_number}`}>
     <th scope="row" data-cell="number" className="font-medium tabular-nums"><span className="md:hidden">Soru </span>{question.question_number}</th>
     <td data-cell="subject">{subject}</td>
-    <td data-cell="topic" className="max-w-sm break-words">{question.topic.name}{question.topic.needs_review ? <span className="mt-1 block text-xs text-muted">Konu adı inceleme bekliyor</span> : null}</td>
+    <td data-cell="topic" className="max-w-sm break-words"><Link href={`/yks27/tyt/topics?subject=${encodeURIComponent(question.subject_id)}&q=${encodeURIComponent(question.topic.name)}`} className="hover:text-accent hover:underline">{question.topic.name}</Link>{question.topic.needs_review ? <span className="mt-1 block text-xs text-muted">Konu adı inceleme bekliyor</span> : null}</td>
     <td data-cell="correct" className="text-sm"><span className="text-muted md:hidden">Doğru cevap: </span>{question.correct_answer}</td>
     <td data-cell="selected" className="text-sm"><span className="text-muted md:hidden">Cevabın: </span>{question.selected_answer ?? "—"}</td>
     <td data-cell="status" className={`font-medium ${status === "correct" ? "text-green-700 dark:text-green-400" : status === "incorrect" ? "text-red-700 dark:text-red-400" : ""}`}>{status === "cancelled" ? "İptal · Doğru sayıldı" : statusLabels[status]}</td>

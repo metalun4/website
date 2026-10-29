@@ -9,7 +9,7 @@ import { sha256, signReceipt, readReceipt, verifyReceipt } from "@/lib/exam-impo
 import { resolveTopic } from "@/lib/exam-import/topics";
 import { ImportError, SUBJECTS, type Preview, type Topic } from "@/lib/exam-import/types";
 
-export type ImportState = { error?: string; success?: string; preview?: Preview; reviewTopics?: Topic[] };
+export type ImportState = { error?: string; success?: string; preview?: Preview; reviewTopics?: Topic[]; unassignedTopics?: Topic[] };
 export async function importPdf(form: FormData): Promise<ImportState> {
   const admin = await requireAdmin();
   try {
@@ -34,15 +34,17 @@ export async function importPdf(form: FormData): Promise<ImportState> {
       if (current?.role !== "admin") return { error: "Oturumunuz sona erdi. Yeniden giriş yapıp PDF’yi önizleyin." };
       const result = await persistImport(parsed, current.token_hash);
       if (result.status === "collision") return { error: "Bu rapor mevcut bir sınavla çakışıyor. Kayıtların tarihini ve sonuçlarını karşılaştırın; hiçbir kayıt değiştirilmedi." };
-      for (const path of ["/yks27/admin", "/yks27/tyt", "/yks27/tyt/dashboard"]) revalidatePath(path);
-      return { success: result.status === "duplicate" ? "Bu rapor zaten kayıtlı. İkinci bir kayıt oluşturulmadı." : "Deneme içe aktarıldı: 120 soru, 13 ders sonucu ve 4 sıralama kaydedildi.", reviewTopics: result.review_topics };
+      for (const path of ["/yks27/admin", "/yks27/admin/topics", "/yks27/tyt", "/yks27/tyt/dashboard", "/yks27/tyt/topics"]) revalidatePath(path);
+      const unassigned = result.unassigned_topics?.length ? ` ${result.unassigned_topics.length} konu grubu bekliyor.` : "";
+      return { success: result.status === "duplicate" ? "Bu rapor zaten kayıtlı. İkinci bir kayıt oluşturulmadı." : `Deneme içe aktarıldı: 120 soru, 13 ders sonucu ve 4 sıralama kaydedildi.${unassigned}`, reviewTopics: result.review_topics, unassignedTopics: result.unassigned_topics ?? [] };
     }
     const existing = await previewImport(parsed);
     const reviewTopics = [...new Set(parsed.questions.flatMap(q => {
       const resolved = resolveTopic(q.subject_id, q.topic_label, existing.topics);
       return resolved.existing?.needs_review || resolved.create?.needs_review ? [`${SUBJECTS.find(s => s.id === q.subject_id)?.name}: ${q.topic_label}`] : [];
     }))];
-    return { preview: { exam: parsed.exam, subjects: parsed.subjects, rankings: parsed.rankings, warnings: parsed.warnings, questionCount: parsed.questions.length, linkCount: parsed.questions.filter(q => q.solution_url).length, reviewTopics, receipt: signReceipt(fileHash, reportHash, admin.token_hash, secret), duplicate: existing.status === "duplicate", collision: existing.status === "collision" } };
+    const unassignedLabels = [...new Set((existing.unassigned_labels ?? []).map(label => `${SUBJECTS.find(s => s.id === label.subject_id)?.name ?? label.subject_id}: ${label.topic_label}`))];
+    return { preview: { exam: parsed.exam, subjects: parsed.subjects, rankings: parsed.rankings, warnings: parsed.warnings, questionCount: parsed.questions.length, linkCount: parsed.questions.filter(q => q.solution_url).length, reviewTopics, unassignedLabels, receipt: signReceipt(fileHash, reportHash, admin.token_hash, secret), duplicate: existing.status === "duplicate", collision: existing.status === "collision" } };
   } catch (error) {
     if (error instanceof ImportError) return { error: error.message };
     // Neither raw database errors nor PDF contents/PII are logged or returned.

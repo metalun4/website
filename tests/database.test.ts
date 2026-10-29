@@ -85,6 +85,10 @@ test("authorized legacy reset migration preserves PINs and active sessions", asy
     const preserved = (await db.query<{result:{exam_id:string}}>("select public.import_tyt_exam($1::jsonb,'preserved-admin') result",[JSON.stringify(await fixtureReport())])).rows[0].result.exam_id;
     const cancellationMigration = await readFile("supabase/migrations/20261028154317_cancelled_questions.sql","utf8");
     await db.exec(cancellationMigration);
+    const topicMigration = await readFile("supabase/migrations/20261029182900_topic_groups.sql","utf8");
+    await db.exec(topicMigration);
+    assert.equal(Number((await db.query<{n:number}>("select count(*) n from public.topic_groups")).rows[0].n),154);
+    assert.equal(Number((await db.query<{n:number}>("select count(*) n from public.topics where group_id is not null")).rows[0].n),0,"Existing topic rows stay unassigned until a later import or an explicit correction");
     assert.equal(Number((await db.query<{n:number}>("select count(*) n from public.exams")).rows[0].n),1);
     assert.equal(Number((await db.query<{n:number}>("select count(*) n from public.exam_questions where exam_id=$1",[preserved])).rows[0].n),120);
     assert.equal(Number((await db.query<{n:number}>("select count(*) n from public.subjects")).rows[0].n),12);
@@ -92,7 +96,8 @@ test("authorized legacy reset migration preserves PINs and active sessions", asy
     assert.equal((await db.query<{token_hash:string}>("select token_hash from public.app_sessions")).rows[0].token_hash,"preserved-admin");
     const result = await db.query<{result:{status:string}}>("select public.import_tyt_exam($1::jsonb,'preserved-admin') result",[JSON.stringify(await fixtureReport())]);
     assert.equal(result.rows[0].result.status,"duplicate");
+    const topicMigrationText = await readFile("supabase/migrations/20261029182900_topic_groups.sql","utf8");
     const core = (sql: string) => sql.slice(sql.indexOf("create table public.exams")).replaceAll("\r\n","\n");
-    assert.equal(core(schema),core(migration)+"\n"+cancellationMigration.replaceAll("\r\n","\n"),"Fresh install and migration chain must have identical exam definitions");
+    assert.equal(core(schema),core(migration)+"\n"+cancellationMigration.replaceAll("\r\n","\n")+"\n"+topicMigrationText.replaceAll("\r\n","\n"),"Fresh install and migration chain must have identical exam definitions");
   } finally { await db.close(); }
 });

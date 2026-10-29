@@ -31,7 +31,7 @@ export default async function Tyt({ searchParams }: { searchParams: Promise<Quer
     <AccountBar admin={current.role === "admin"} />
     <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div><h1 id="yks-content" tabIndex={-1} className="text-3xl font-semibold tracking-tight">TYT denemeleri</h1><p className="mt-2 text-muted">{all.length} deneme · En yeniden eskiye</p></div>
-      <Link href="/yks27/tyt/dashboard" className="yks-button yks-button-primary">Gelişim paneli</Link>
+      <div className="flex flex-wrap gap-2"><Link href="/yks27/tyt/topics" className="yks-button">Konu başarısı</Link><Link href="/yks27/tyt/dashboard" className="yks-button yks-button-primary">Gelişim paneli</Link></div>
     </header>
     {all.length > 0 && <form action="/yks27/tyt" className="yks-panel mb-6 grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2">
       <label className="block">Deneme ara<input type="search" name="q" autoComplete="off" defaultValue={q} maxLength={100} placeholder="Örn. ÖZDEBİR…" className="yks-input mt-1" /></label>

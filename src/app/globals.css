@@ -458,6 +458,13 @@ a.yks-featured:hover { background: var(--surface-muted); }
 .yks-results-table tfoot tr > :first-child { background: var(--surface-emphasis); }
 .yks-results-table tr:hover > :first-child { background: var(--surface-muted); }
 .yks-exam-card { content-visibility: auto; contain-intrinsic-size: auto 230px; }
+.yks-topic-card { content-visibility: auto; contain-intrinsic-size: auto 96px; }
+.yks-meter { display: block; width: 100%; height: 0.5rem; border: 0; border-radius: 999px; background: var(--surface-muted); color: var(--accent); }
+.yks-meter::-webkit-meter-bar { height: 0.5rem; border: 0; border-radius: 999px; background: var(--surface-muted); }
+.yks-meter::-webkit-meter-optimum-value,
+.yks-meter::-webkit-meter-suboptimum-value,
+.yks-meter::-webkit-meter-even-less-good-value { border-radius: 999px; background: var(--accent); }
+.yks-meter::-moz-meter-bar { border-radius: 999px; background: var(--accent); }
 .yks-question-table { width: 100%; min-width: 700px; table-layout: fixed; text-align: center; }
 .yks-question-table :is(th, td) { padding: 4px 6px; text-align: center; vertical-align: middle; align-self: center; overflow-wrap: anywhere; }
 .yks-question-table thead { background: var(--surface-muted); color: var(--muted); font-size: 0.75rem; }

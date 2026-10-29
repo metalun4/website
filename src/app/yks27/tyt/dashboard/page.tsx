@@ -82,7 +82,7 @@ function SubjectSnapshot({ latest }: { latest: CalculatedExam }) {
   return <section className="my-7" aria-labelledby="subject-heading">
     <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
       <h2 id="subject-heading" className="text-lg font-semibold">Son denemede derslerin</h2>
-      <Link href={`/yks27/tyt/${latest.id}#konu-analizi`} className="inline-flex items-center text-accent hover:underline">Soru analizini incele →</Link>
+      <span className="flex flex-wrap gap-x-4 gap-y-2"><Link href="/yks27/tyt/topics" className="inline-flex items-center text-accent hover:underline">Konu başarısını incele</Link><Link href={`/yks27/tyt/${latest.id}#konu-analizi`} className="inline-flex items-center text-accent hover:underline">Soru analizini incele</Link></span>
     </div>
     <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
       {subjects.map((subject, index) => <div key={subject.key} className="yks-panel">
