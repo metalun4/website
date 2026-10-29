@@ -1,12 +1,13 @@
-import {MetadataRoute} from "next";
+import type { MetadataRoute } from "next";
+import { siteContentUpdated, siteUrl } from "@/lib/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
     {
-      url: "https://baris.aydemir.website",
-      lastModified: new Date(),
+      url: siteUrl,
+      lastModified: siteContentUpdated,
       changeFrequency: "yearly",
       priority: 1,
-    }
-  ]
+    },
+  ];
 }

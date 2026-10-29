@@ -1,8 +1,62 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import { ArrowDown, ArrowUpRight, BrainCircuit, Code2, FileText, Mail, MapPin, Server, Smartphone } from "lucide-react";
 import ppImage from "@/assets/baris.jpg";
 import { Github, Linkedin } from "@/components/social-icons";
 import { CopyEmailButton } from "@/components/copy-email-button";
+import { siteDescription, siteName, siteTitle, siteUrl } from "@/lib/site";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+  authors: [{ name: siteName, url: siteUrl }],
+  openGraph: {
+    title: siteTitle,
+    description: siteDescription,
+    url: "/",
+    siteName,
+    type: "website",
+    locale: "en_US",
+    images: [
+      {
+        url: "/baris.jpg",
+        width: 1080,
+        height: 1080,
+        alt: "Barış Aydemir by the waterfront",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: siteTitle,
+    description: siteDescription,
+    images: ["/baris.jpg"],
+  },
+};
+
+const profileJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ProfilePage",
+  url: siteUrl,
+  mainEntity: {
+    "@type": "Person",
+    name: siteName,
+    alternateName: "Baris Aydemir",
+    url: siteUrl,
+    image: `${siteUrl}/baris.jpg`,
+    jobTitle: "Software Developer",
+    description: siteDescription,
+    email: "mailto:baris@aydemir.website",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "İzmir",
+      addressCountry: "TR",
+    },
+    sameAs: [
+      "https://github.com/metalun4",
+      "https://www.linkedin.com/in/barisaydemir",
+    ],
+  },
+};
 
 const expertise = [
   { title: "Web & mobile", description: "Interfaces that make complex tasks feel straightforward.", icon: Code2, skills: ["JavaScript", "TypeScript", "React", "Next.js", "React Native"] },
@@ -27,6 +81,7 @@ export default function Home() {
 
   return (
     <div className="portfolio mx-auto max-w-6xl px-5 sm:px-8 lg:px-12">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(profileJsonLd).replace(/</g, "\\u003c") }} />
       <a href="#main-content" className="skip-link">Skip to content</a>
       <header className="portfolio-header">
         <a href="#main-content" aria-label="Barış Aydemir, home" className="portfolio-wordmark" translate="no">
@@ -44,8 +99,9 @@ export default function Home() {
       <main id="main-content" tabIndex={-1}>
         <section aria-labelledby="intro-heading" className="portfolio-hero">
           <div className="min-w-0">
-            <p className="portfolio-eyebrow"><span translate="no">Barış Aydemir</span><span className="mx-2 text-subtle" aria-hidden="true">/</span>Software developer</p>
-            <h1 id="intro-heading" className="portfolio-headline">From an idea to<br className="hidden sm:block" /> <span className="text-accent">working software.</span></h1>
+            <p className="portfolio-eyebrow">Software developer</p>
+            <h1 id="intro-heading" className="portfolio-headline" translate="no">Barış Aydemir</h1>
+            <p className="portfolio-slogan">From an idea to<br className="hidden sm:block" /> <span className="text-accent">working software.</span></p>
             <p className="portfolio-intro">I build web and mobile applications, connect the systems behind them, and bring machine learning into practical use.</p>
             <div className="portfolio-hero-actions">
               <a href="mailto:baris@aydemir.website" className="portfolio-button portfolio-button-primary"><Mail size={17} aria-hidden="true" /> Get in touch <ArrowUpRight size={16} aria-hidden="true" /></a>

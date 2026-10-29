@@ -1,5 +1,6 @@
 import type {Metadata, Viewport} from "next";
 import {Geist} from "next/font/google";
+import {siteDescription, siteTitle, siteUrl} from "@/lib/site";
 import "./globals.css";
 
 const geist = Geist({
@@ -15,33 +16,10 @@ export const viewport: Viewport = {
   ],
 };
 
-const metaInfo = {
-  author: "Baris Aydemir",
-  description: "An experienced Software Developer with a passion for building innovative solutions.",
-  title: "Software Developer",
-  url: "https://baris.aydemir.website",
-}
-
 export const metadata: Metadata = {
-  title: `${metaInfo.author} | ${metaInfo.title}`,
-  description: metaInfo.description,
-  authors: [{name: metaInfo.author, url: metaInfo.url}],
-  keywords: ["Software", "Developer", "Frontend", "Development", "Freelancer", "Freelance"],
-  openGraph: {
-    title: `${metaInfo.author} | ${metaInfo.title}`,
-    description: metaInfo.description,
-    url: metaInfo.url,
-    siteName: `${metaInfo.author} Portfolio`,
-    type: "website",
-    locale: "en_US",
-    images: [
-      {
-        url: `${metaInfo.url}/baris.jpg`,
-        width: 160,
-        height: 160,
-      }
-    ]
-  }
+  metadataBase: new URL(siteUrl),
+  title: siteTitle,
+  description: siteDescription,
 };
 
 export default function RootLayout({
