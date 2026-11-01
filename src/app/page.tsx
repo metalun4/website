@@ -21,7 +21,7 @@ export const metadata: Metadata = {
         url: "/baris.jpg",
         width: 1080,
         height: 1080,
-        alt: "Barış Aydemir by the waterfront",
+        alt: "Portrait of Barış Aydemir",
       },
     ],
   },
@@ -111,7 +111,7 @@ export default function Home() {
           </div>
 
           <div className="portfolio-profile">
-            <div className="portfolio-portrait"><Image src={ppImage} alt="Barış Aydemir by the waterfront" width={288} height={288} sizes="(min-width: 1024px) 270px, (min-width: 768px) 222px, 62px" loading="eager" fetchPriority="high" placeholder="blur" className="aspect-square w-full rounded-xl object-cover" /></div>
+            <div className="portfolio-portrait"><Image src={ppImage} alt="Portrait of Barış Aydemir" width={288} height={288} sizes="(min-width: 1024px) 270px, (min-width: 768px) 222px, 62px" loading="eager" fetchPriority="high" placeholder="blur" className="aspect-square w-full rounded-xl object-cover" /></div>
             <p className="flex items-center gap-2 text-sm text-muted"><MapPin size={16} className="shrink-0 text-accent" aria-hidden="true" /> İzmir, Türkiye</p>
             <ul aria-label="Social profiles" className="flex flex-wrap gap-x-4">
               {profiles.map(({ label, url, icon: Icon }) => <li key={label}><a href={url} target="_blank" rel="noopener noreferrer" className="portfolio-text-link inline-flex min-h-11 items-center gap-2 text-sm"><Icon size={16} aria-hidden="true" />{label}<ArrowUpRight size={12} className="text-subtle" aria-hidden="true" /><span className="sr-only"> (opens in a new tab)</span></a></li>)}
