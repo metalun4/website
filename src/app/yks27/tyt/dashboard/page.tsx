@@ -3,7 +3,7 @@ import Link from "next/link";
 import { requireSession } from "@/lib/session";
 import { getExams } from "@/lib/exams";
 import { queryValue, type Query } from "@/lib/yks-navigation";
-import { yks26Tyt, yks26TytNet, yks26TytOutperformed } from "@/lib/yks26-tyt";
+import { yks26TytNet } from "@/lib/yks26-tyt";
 import { AccountBar } from "../account-bar";
 import { LazyDetails } from "../../lazy-details";
 import { AdvancedAnalytics, type AnalyticsExam } from "../analytics";
@@ -47,34 +47,19 @@ function SummaryCards({ latest, previous }: { latest: CalculatedExam; previous?:
   </dl>;
 }
 
-function ComparisonGroup({ title, note, stats }: { title: string; note?: string; stats: { label: string; value: string }[] }) {
-  return <div>
-    <h2 className="font-semibold">{title}</h2>
-    {note ? <p className="mt-2 text-xs leading-6 text-muted">{note}</p> : null}
-    <dl className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-3">
-      {stats.map(stat => <div key={stat.label}><dt className="text-muted">{stat.label}</dt><dd className="mt-2 font-semibold tabular-nums">{stat.value}</dd></div>)}
-    </dl>
-  </div>;
-}
-
 function Comparisons({ latest, first }: { latest: CalculatedExam; first: CalculatedExam }) {
-  return <section aria-label="Sınav karşılaştırmaları" className="mb-7 rounded-lg bg-surface-muted p-4 text-sm">
-    <ComparisonGroup title="İlk denemeye göre gelişim" stats={[
-      { label: "Net farkı", value: signed(difference(latest.net, first.net)) },
-      { label: "Yüzdelik farkı", value: `${signed(difference(latest.outperformed, first.outperformed))} yüzde puan` },
-      { label: "Puan farkı", value: signed(difference(latest.score ?? null, first.score ?? null)) },
-    ]} />
-    <div className="mt-5 border-t border-border pt-4">
-      <ComparisonGroup
-        title="YKS26 TYT’ye göre gelişim"
-        note={`YKS26 TYT: ${number(yks26TytNet)} net · ${number(yks26Tyt.score, 5)} puan · ${number(yks26Tyt.rank, 0)}. sıra / ${number(yks26Tyt.participants, 0)} katılımcı`}
-        stats={[
-          { label: "Net farkı", value: signed(difference(latest.net, yks26TytNet)) },
-          { label: "Yüzdelik farkı", value: `${signed(difference(latest.outperformed, yks26TytOutperformed))} yüzde puan` },
-          { label: "Puan farkı", value: signed(difference(latest.score ?? null, yks26Tyt.score)) },
-        ]}
-      />
-    </div>
+  const comparisons = [
+    { title: "İlk denemeye göre gelişim", baseline: first.net },
+    { title: "YKS 2026 TYT’ye göre gelişim", baseline: yks26TytNet },
+  ];
+  return <section aria-label="Sınav karşılaştırmaları" className="mb-7 grid gap-3 sm:grid-cols-2">
+    {comparisons.map(comparison => <div key={comparison.title} className="yks-panel min-w-0">
+      <h2 className="text-sm font-medium">{comparison.title}</h2>
+      <dl className="mt-3 flex items-baseline justify-between gap-3">
+        <dt className="text-sm text-muted">Net farkı</dt>
+        <dd className="text-2xl font-semibold tabular-nums">{signed(difference(latest.net, comparison.baseline))}</dd>
+      </dl>
+    </div>)}
   </section>;
 }
 
@@ -141,9 +126,8 @@ export default async function TytDashboard({ searchParams }: { searchParams: Pro
       <p className="mt-2 text-sm leading-6 text-muted">Son deneme: <Link href={`/yks27/tyt/${latest.id}`} className="text-foreground hover:underline">{latest.name}</Link> · {dateLabel(latest.date)}</p>
     </header>
     <SummaryCards latest={latest} previous={previous} />
-    <Comparisons latest={latest} first={all[0]} />
-    <SubjectSnapshot latest={latest} />
     <div className="w-full min-w-0">
+      <Comparisons latest={latest} first={all[0]} />
       <section aria-labelledby="trend-heading" className="mb-7">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <h2 id="trend-heading" className="text-lg font-semibold">Net gelişimi</h2>
@@ -161,6 +145,7 @@ export default async function TytDashboard({ searchParams }: { searchParams: Pro
           ]}
         />
       </section>
+      <SubjectSnapshot latest={latest} />
       <LazyDetails label="Ayrıntılı analiz · Performans, doğruluk ve DPS">
         <AdvancedAnalytics exams={points} trendIncludesHidden={range !== "all" && exams.length < all.length} />
       </LazyDetails>
