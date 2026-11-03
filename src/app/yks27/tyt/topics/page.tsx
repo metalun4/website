@@ -196,12 +196,6 @@ export default async function TopicAnalysisPage({ searchParams }: { searchParams
           ["Başarı", rateLabel(view.overall.success)],
         ].map(([label, value]) => <div key={label} className="min-w-0 rounded-xl border border-border bg-surface p-3 sm:p-5"><dt className="text-xs text-muted">{label}</dt><dd className="mt-2 break-words text-2xl font-semibold tabular-nums">{value}</dd></div>)}
       </dl>
-      <section className="mb-6 rounded-lg bg-surface-muted p-4 text-sm leading-6">
-        <h2 className="font-semibold">Bu sayılar neyi ölçer?</h2>
-        <p className="mt-2">Başarı = doğru / geçerli soru. Deneme oranı = cevaplanan / geçerli soru. Denenenlerde doğruluk = doğru / cevaplanan soru. Net = doğru − yanlış / 4. Boşlar başarıyı düşürür; doğruluğu ise yalnızca denenen sorulardan hesaplanır.</p>
-        <p className="mt-2">Güçlü performans için en az {MIN_EXAMS} deneme, {MIN_VALID_QUESTIONS} geçerli soru ve {wholePercent.format(STRONG_RATE)} başarı ile denenen doğruluk gerekir. Yanlışlar, yanlış payı {wholePercent.format(MISS_RATE)} veya üzeri ve boşlardan az değilse öne çıkar. Boşlar, boş payı bu eşiği geçip yanlışlardan fazlaysa öne çıkar. Daha az gözlem yorumlanmaz.</p>
-        <p className="mt-2 tabular-nums">Bu özette {number(view.overall.valid + view.overall.cancelled, 0)} soru var. {number(view.grouped.valid + view.grouped.cancelled, 0)} soru bir gruba bağlı. {number(view.unassignedAll.reduce((sum, topic) => sum + topic.counts.valid + topic.counts.cancelled, 0), 0)} soru grupsuz ve özete bir kez dahil. {view.overall.cancelled > 0 ? `${number(view.overall.cancelled, 0)} iptal soru resmi nette doğru sayılır, konu başarısına katılmaz.` : "İptal soru yok."}</p>
-      </section>
       {breakdown ? <Detail breakdown={breakdown} subjectName={subjectName} /> : null}
       <section aria-labelledby="priority-heading" className="mb-6">
         <h2 id="priority-heading" className="mb-3 text-lg font-semibold">Öne çıkan konular</h2>
@@ -211,6 +205,12 @@ export default async function TopicAnalysisPage({ searchParams }: { searchParams
           <RankList title="Güçlü performans" topics={view.topStrong} hrefFor={topicHrefFor} />
         </div>
       </section>
+      <details className="mb-5 text-sm leading-6 text-muted">
+        <summary className="inline-flex min-h-11 items-center font-medium text-foreground">Bu sayılar neyi ölçer?</summary>
+        <p className="mt-2">Başarı = doğru / geçerli soru. Deneme oranı = cevaplanan / geçerli soru. Denenenlerde doğruluk = doğru / cevaplanan soru. Net = doğru − yanlış / 4. Boşlar başarıyı düşürür; doğruluğu ise yalnızca denenen sorulardan hesaplanır.</p>
+        <p className="mt-2">Güçlü performans için en az {MIN_EXAMS} deneme, {MIN_VALID_QUESTIONS} geçerli soru ve {wholePercent.format(STRONG_RATE)} başarı ile denenen doğruluk gerekir. Yanlışlar, yanlış payı {wholePercent.format(MISS_RATE)} veya üzeri ve boşlardan az değilse öne çıkar. Boşlar, boş payı bu eşiği geçip yanlışlardan fazlaysa öne çıkar. Daha az gözlem yorumlanmaz.</p>
+        <p className="mt-2 tabular-nums">Bu özette {number(view.overall.valid + view.overall.cancelled, 0)} soru var. {number(view.grouped.valid + view.grouped.cancelled, 0)} soru bir gruba bağlı. {number(view.unassignedAll.reduce((sum, topic) => sum + topic.counts.valid + topic.counts.cancelled, 0), 0)} soru grupsuz ve özete bir kez dahil. {view.overall.cancelled > 0 ? `${number(view.overall.cancelled, 0)} iptal soru resmi nette doğru sayılır, konu başarısına katılmaz.` : "İptal soru yok."}</p>
+      </details>
       <nav aria-label="Derslere git" className="yks-jump-links mb-5">{view.sections.map(section => <a key={section.id} href={`#ders-${section.id}`}>{section.name}</a>)}<a href="#gruplanmamis">Grupsuz konular</a></nav>
       {view.sections.map(section => <section key={section.id} id={`ders-${section.id}`} aria-labelledby={`heading-${section.id}`} className="mb-8 scroll-mt-6">
         <h2 id={`heading-${section.id}`} className="text-xl font-semibold">{section.name}</h2>
