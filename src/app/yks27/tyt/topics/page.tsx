@@ -114,7 +114,7 @@ function RankList({ title, topics, hrefFor }: { title: string; topics: VisibleTo
     {topics.length === 0 ? <p className="mt-2 text-sm text-muted">Bu aralıkta listelenecek konu yok.</p> : <ol className="mt-3 space-y-3">
       {topics.map(topic => <li key={topic.id} className="min-w-0">
         <Link href={hrefFor(topic)} className="break-words font-medium hover:text-accent hover:underline">{topic.name}</Link>
-        <p className="text-sm text-muted tabular-nums">{number(topic.metrics.wrong, 0)} yanlış · {number(topic.metrics.blank, 0)} boş · başarı {rateLabel(topic.metrics.success)} · {readingLabels[topic.reading]}</p>
+        <p className="text-sm text-muted tabular-nums">{number(topic.metrics.valid, 0)} geçerli soruda {number(topic.metrics.correct, 0)} doğru · {number(topic.metrics.wrong, 0)} yanlış · {number(topic.metrics.blank, 0)} boş · başarı {rateLabel(topic.metrics.success)} · {readingLabels[topic.reading]}</p>
       </li>)}
     </ol>}
   </section>;
