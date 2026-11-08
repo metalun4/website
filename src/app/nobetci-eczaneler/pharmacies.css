@@ -29,7 +29,7 @@
   -webkit-tap-highlight-color: var(--accent-soft);
 }
 
-.pharmacy-page :is(a, button, input, [tabindex]):focus-visible {
+.pharmacy-page :is(a, button, summary, input, [tabindex]):focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }

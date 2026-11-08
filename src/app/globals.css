@@ -72,7 +72,7 @@ body {
   overflow-wrap: break-word;
 }
 
-.portfolio :is(a, button, summary) {
+.portfolio :is(a, button) {
   touch-action: manipulation;
   -webkit-tap-highlight-color: var(--accent-soft);
 }
@@ -114,6 +114,7 @@ body {
 .portfolio-tools > summary {
   cursor: pointer;
   list-style: none;
+  touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -419,7 +420,8 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .portfolio :is(a, summary) {
+  .portfolio a,
+  .portfolio-nav {
     transition: none;
   }
 }
