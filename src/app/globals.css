@@ -72,12 +72,12 @@ body {
   overflow-wrap: break-word;
 }
 
-.portfolio :is(a, button) {
+.portfolio :is(a, button, summary) {
   touch-action: manipulation;
   -webkit-tap-highlight-color: var(--accent-soft);
 }
 
-.portfolio :is(a, button, [tabindex]):focus-visible {
+.portfolio :is(a, button, summary, [tabindex]):focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 5px;
   border-radius: 4px;
@@ -106,8 +106,23 @@ body {
 }
 
 .portfolio-nav:hover,
+.portfolio-tools[open] > summary,
 .portfolio-wordmark:hover {
   color: var(--accent);
+}
+
+.portfolio-tools > summary {
+  cursor: pointer;
+  list-style: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.portfolio-tools > summary::-webkit-details-marker {
+  display: none;
+}
+
+.portfolio-tools[open] > summary svg {
+  transform: rotate(180deg);
 }
 
 .portfolio-text-link {
@@ -362,10 +377,13 @@ body {
 .portfolio-copy-button:hover { border-color: var(--accent); color: var(--accent); }
 .portfolio-copy-button:disabled { cursor: wait; }
 
-@media (max-width: 419px) {
+@media (max-width: 480px) {
   .portfolio-header { column-gap: 0.75rem; }
+  .portfolio-navigation { column-gap: 0.5rem; }
+}
+
+@media (max-width: 419px) {
   .portfolio-monogram { width: 32px; }
-  .portfolio-navigation { gap: 0.25rem 0.75rem; }
   .portfolio-hero-actions { display: grid; }
   .portfolio-eyebrow { font-size: 0.625rem; letter-spacing: 0.1em; }
 }
@@ -401,7 +419,7 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .portfolio a {
+  .portfolio :is(a, summary) {
     transition: none;
   }
 }

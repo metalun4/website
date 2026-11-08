@@ -4,6 +4,7 @@ import { ArrowDown, ArrowUpRight, BrainCircuit, Code2, FileText, Mail, MapPin, S
 import ppImage from "@/assets/baris.jpg";
 import { Github, Linkedin } from "@/components/social-icons";
 import { CopyEmailButton } from "@/components/copy-email-button";
+import { ToolsMenu } from "@/components/tools-menu";
 import { siteDescription, siteName, siteTitle, siteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -88,11 +89,12 @@ export default function Home() {
           <span className="portfolio-monogram" aria-hidden="true">ba.</span>
           <span className="hidden sm:inline">Barış Aydemir</span>
         </a>
-        <nav aria-label="Main navigation" className="portfolio-navigation">
+        <nav aria-label="Main navigation" className="portfolio-navigation relative">
           <a href="#work" className="portfolio-nav">Work</a>
           <a href="#expertise" className="portfolio-nav">Expertise</a>
           <a href="#about" className="portfolio-nav">About</a>
           <a href="#contact" className="portfolio-nav">Contact</a>
+          <ToolsMenu />
         </nav>
       </header>
 
