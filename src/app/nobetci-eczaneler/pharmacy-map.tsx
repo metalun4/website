@@ -5,6 +5,7 @@ import { useEffect, useEffectEvent, useMemo, useRef, useState, type ReactNode } 
 import type { FeatureCollection, Point } from "geojson";
 import type { GeoJSONSource, Map as LibreMap, MapMouseEvent, Subscription } from "maplibre-gl";
 import type { Coordinates, Pharmacy } from "@/lib/pharmacies";
+import { pharmacyIcon } from "@/lib/pharmacy-icon";
 
 const izmirCenter: Coordinates = [27.1428, 38.4237];
 const styles = {
@@ -15,7 +16,7 @@ const pins = "duty-pharmacies";
 const clusters = "duty-clusters";
 const selected = "duty-selection";
 const location = "visitor-location";
-const plusImage = "pharmacy-cross";
+const pinImage = "pharmacy-letter";
 
 type Points = FeatureCollection<Point>;
 export type MapTarget = { coordinates: Coordinates; minZoom: number };
@@ -26,9 +27,7 @@ function selectedFilter(id: string | null): ["==", ["get", string], string] {
 
 function addPharmacyLayers(map: LibreMap, points: Points, visitor: Points, selectedId: string | null) {
   const theme = getComputedStyle(map.getContainer());
-  const accent = theme.getPropertyValue("--accent").trim();
   const surface = theme.getPropertyValue("--surface").trim();
-  const background = theme.getPropertyValue("--background").trim();
   const locationColor = theme.getPropertyValue("--chart-secondary").trim();
 
   map.addSource(pins, { type: "geojson", data: points, cluster: true, clusterRadius: 31, clusterMaxZoom: 11 });
@@ -38,7 +37,7 @@ function addPharmacyLayers(map: LibreMap, points: Points, visitor: Points, selec
     id: clusters, type: "circle", source: pins, filter: ["has", "point_count"],
     paint: {
       "circle-radius": ["step", ["get", "point_count"], 14, 10, 17, 30, 20],
-      "circle-color": accent, "circle-stroke-color": surface, "circle-stroke-width": 2.5,
+      "circle-color": pharmacyIcon.red, "circle-stroke-color": pharmacyIcon.white, "circle-stroke-width": 2.5,
     },
   });
   map.addLayer({
@@ -47,19 +46,19 @@ function addPharmacyLayers(map: LibreMap, points: Points, visitor: Points, selec
       "text-field": ["to-string", ["get", "point_count"]],
       "text-font": ["Noto Sans Bold"], "text-size": 12, "text-allow-overlap": true,
     },
-    paint: { "text-color": background },
+    paint: { "text-color": pharmacyIcon.white },
   });
   map.addLayer({
     id: selected, type: "circle", source: pins, filter: selectedFilter(selectedId),
     paint: {
-      "circle-radius": 16, "circle-color": surface,
-      "circle-stroke-color": accent, "circle-stroke-width": 2,
+      "circle-radius": 16, "circle-color": pharmacyIcon.white,
+      "circle-stroke-color": pharmacyIcon.red, "circle-stroke-width": 2,
     },
   });
   map.addLayer({
     id: pins, type: "circle", source: pins, filter: ["!", ["has", "point_count"]],
     paint: {
-      "circle-radius": 10, "circle-color": accent, "circle-stroke-color": surface, "circle-stroke-width": 2,
+      "circle-radius": 10, "circle-color": pharmacyIcon.red, "circle-stroke-color": pharmacyIcon.white, "circle-stroke-width": 2,
     },
   });
 
@@ -67,13 +66,12 @@ function addPharmacyLayers(map: LibreMap, points: Points, visitor: Points, selec
   image.width = image.height = 24;
   const context = image.getContext("2d");
   if (context) {
-    context.fillStyle = background;
-    context.fillRect(10, 3, 4, 18);
-    context.fillRect(3, 10, 18, 4);
-    map.addImage(plusImage, context.getImageData(0, 0, 24, 24), { pixelRatio: 2 });
+    context.fillStyle = pharmacyIcon.white;
+    context.fill(new Path2D(pharmacyIcon.path));
+    map.addImage(pinImage, context.getImageData(0, 0, 24, 24), { pixelRatio: 1.5 });
     map.addLayer({
-      id: "duty-pin-cross", type: "symbol", source: pins, filter: ["!", ["has", "point_count"]],
-      layout: { "icon-image": plusImage, "icon-allow-overlap": true },
+      id: "duty-pin-symbol", type: "symbol", source: pins, filter: ["!", ["has", "point_count"]],
+      layout: { "icon-image": pinImage, "icon-allow-overlap": true },
     });
   }
 

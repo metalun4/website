@@ -2,7 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
-import { ChevronDown, MapPin } from "lucide-react";
+import { ChevronDown } from "lucide-react";
+import { pharmacyIcon } from "@/lib/pharmacy-icon";
 
 const pharmacyPath = "/nobetci-eczaneler";
 
@@ -57,7 +58,10 @@ export function ToolsMenu({ label = "Tools", currentPath }: { label?: string; cu
             }}
             className="flex min-h-11 items-center gap-2 rounded-lg px-3 py-2 hover:bg-accent-soft hover:text-accent aria-[current=page]:bg-accent-soft"
           >
-            <MapPin size={16} className="shrink-0 text-accent" aria-hidden="true" />
+            <svg width={18} height={18} viewBox="0 0 24 24" className="shrink-0" aria-hidden="true">
+              <rect width={24} height={24} rx={5} fill={pharmacyIcon.red} />
+              <path d={pharmacyIcon.path} fill={pharmacyIcon.white} transform="translate(3 3) scale(.75)" />
+            </svg>
             İzmir Nöbetçi Eczaneler
           </Link>
         </li>
