@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test:access": "node scripts/test-access.mjs",
+    "test:instagram": "playwright test",
     "test": "node --import tsx --test --test-concurrency=1 tests/*.test.ts",
     "prebuild": "node scripts/build-pdf-worker.mjs",
     "predev": "node scripts/build-pdf-worker.mjs"
@@ -29,6 +30,7 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.13",
+    "@playwright/test": "^1.65.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/d3": "^7.4.3",
     "@types/node": "^26.6.5",

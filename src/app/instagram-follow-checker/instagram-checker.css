@@ -1,0 +1,12 @@
+.instagram-checker .portfolio-button:disabled {
+  border-color: var(--border);
+  background: var(--surface-muted);
+  color: var(--subtle);
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .instagram-checker .portfolio-button {
+    transition: none;
+  }
+}

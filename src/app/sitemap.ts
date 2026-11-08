@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { siteContentUpdated, siteUrl } from "@/lib/site";
+import { instagramFollowCheckerPath, siteContentUpdated, siteUrl } from "@/lib/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
@@ -12,6 +12,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     {
       url: `${siteUrl}/nobetci-eczaneler`,
       changeFrequency: "daily",
+    },
+    {
+      url: `${siteUrl}${instagramFollowCheckerPath}`,
+      lastModified: "2026-11-08",
     },
   ];
 }

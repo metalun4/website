@@ -1,5 +1,7 @@
 export const siteUrl = "https://aydemir.website";
 
+export const instagramFollowCheckerPath = "/instagram-follow-checker";
+
 export const siteName = "Barış Aydemir";
 
 export const siteTitle = "Barış Aydemir | Software Developer in İzmir";
