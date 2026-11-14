@@ -63,7 +63,7 @@ test("the Tools menu supports keyboard navigation, dismissal, and current routes
   await page.goto("/");
   const tools = page.locator("summary").filter({ hasText: "Tools" });
   const checker = page.getByRole("link", { name: "Instagram Follow Checker", exact: true });
-  const pharmacy = page.getByRole("link", { name: "İzmir Nöbetçi Eczaneler", exact: true });
+  const pharmacy = page.getByRole("link", { name: "Nöbetçi Eczane Bul", exact: true });
 
   await tools.press("Enter");
   await page.keyboard.press("Tab");

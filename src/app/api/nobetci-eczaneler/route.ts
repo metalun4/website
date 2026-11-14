@@ -1,9 +1,8 @@
-import { createPharmacyResponse } from "@/lib/pharmacy-feed";
+import { cityPharmacyRoute } from "@/lib/pharmacy-cache";
 
-// Cache the validated response at Vercel's CDN. A build or browser request does
-// not populate a separate Next.js fetch cache with unvalidated upstream data.
 export const dynamic = "force-dynamic";
+export const maxDuration = 20;
 
-export function GET() {
-  return createPharmacyResponse();
+export function GET(request: Request) {
+  return cityPharmacyRoute(request, "izmir");
 }

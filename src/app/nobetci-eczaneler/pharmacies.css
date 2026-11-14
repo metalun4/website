@@ -1,5 +1,5 @@
 .pharmacy-page {
-  --map-height: clamp(19rem, 54svh, 30rem);
+  --map-height: clamp(17.5rem, 46svh, 30rem);
   max-width: 85rem;
   margin-inline: auto;
   padding: 1.25rem max(.85rem, env(safe-area-inset-right)) max(1.25rem, env(safe-area-inset-bottom)) max(.85rem, env(safe-area-inset-left));
@@ -19,6 +19,7 @@
 
 .pharmacy-heading p {
   margin-top: .4rem;
+  max-width: 68ch;
   color: var(--muted);
   font-size: .875rem;
   line-height: 1.5;
@@ -81,6 +82,18 @@
   color: var(--muted);
 }
 
+.pharmacy-status-copy .pharmacy-coverage {
+  margin-top: .2rem;
+  color: var(--foreground);
+}
+
+.pharmacy-status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .4rem .75rem;
+}
+
 .pharmacy-last-fetch time {
   color: var(--foreground);
   font-variant-numeric: tabular-nums;
@@ -95,6 +108,10 @@
 .pharmacy-map-column,
 .pharmacy-panel {
   min-width: 0;
+}
+
+.pharmacy-workspace[data-results-first="true"] .pharmacy-panel {
+  grid-row: 1;
 }
 
 .pharmacy-map {
@@ -113,19 +130,45 @@
 }
 
 .pharmacy-toolbar {
-  position: absolute;
-  z-index: 1;
-  inset: .6rem .6rem auto;
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
-  gap: .4rem;
-  pointer-events: none;
+  align-items: stretch;
+  gap: .5rem;
+  margin-bottom: .8rem;
 }
 
-.pharmacy-toolbar > *,
-.pharmacy-map-controls > * {
-  pointer-events: auto;
+.pharmacy-city-links {
+  display: inline-flex;
+  flex: 1;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.pharmacy-city-links a {
+  display: flex;
+  flex: 1;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding-inline: .7rem;
+  font-size: .8125rem;
+  font-weight: 500;
+}
+
+.pharmacy-city-links a + a {
+  border-inline-start: 1px solid var(--border);
+}
+
+.pharmacy-city-links a:hover,
+.pharmacy-city-links a[aria-current="page"] {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.pharmacy-city-links a:focus-visible {
+  outline-offset: -3px;
 }
 
 .pharmacy-search {
@@ -154,6 +197,7 @@
   min-width: 0;
   padding-right: .4rem;
   color: var(--foreground);
+  caret-color: var(--accent);
   font-size: 1rem;
 }
 
@@ -213,11 +257,33 @@
   background: var(--foreground);
 }
 
-.pharmacy-locate svg {
+.pharmacy-button-primary:disabled {
+  color: var(--muted);
+  background: var(--surface-emphasis);
+}
+
+.pharmacy-locate {
+  flex-basis: 100%;
+  font-size: .875rem;
+  font-weight: 600;
+}
+
+.pharmacy-location-message {
+  display: flex;
+  align-items: flex-start;
+  gap: .45rem;
+  margin: -.1rem 0 .7rem;
+  color: var(--muted);
+  font-size: .8125rem;
+  line-height: 1.5;
+}
+
+.pharmacy-location-message svg {
+  flex-shrink: 0;
+  margin-top: .11rem;
   color: var(--accent);
 }
 
-.pharmacy-location-error,
 .pharmacy-map-message {
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -225,15 +291,8 @@
   color: var(--foreground);
   background: var(--surface);
   font-size: .8125rem;
-}
-
-.pharmacy-location-error {
-  flex-basis: 100%;
-}
-
-.pharmacy-map-message {
   position: absolute;
-  inset: 54% 1rem auto;
+  inset: 46% 1rem auto;
   width: fit-content;
   max-width: calc(100% - 2rem);
   margin-inline: auto;
@@ -246,26 +305,59 @@
   z-index: 1;
   inset: auto .6rem .6rem;
   display: flex;
-  align-items: end;
+  flex-wrap: wrap;
+  align-items: center;
   gap: .4rem;
   pointer-events: none;
 }
 
+.pharmacy-map-controls > * {
+  pointer-events: auto;
+}
+
+.pharmacy-map-controls p {
+  flex-basis: 100%;
+  width: fit-content;
+  max-width: max-content;
+  padding: .35rem .6rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: .8125rem;
+}
+
+.pharmacy-map-crosshair {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  transform: translate(-50%, -50%);
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  color: var(--accent);
+  background: var(--surface);
+  pointer-events: none;
+}
+
 .pharmacy-zoom {
+  position: absolute;
+  inset: .6rem .6rem auto auto;
   display: flex;
-  margin-left: auto;
+  flex-direction: column;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--surface);
 }
 
 .pharmacy-zoom button + button {
-  border-left: 1px solid var(--border);
+  border-top: 1px solid var(--border);
   border-radius: 0;
 }
 
 .pharmacy-zoom button:last-child {
-  border-radius: 0 7px 7px 0;
+  border-radius: 0 0 7px 7px;
 }
 
 .pharmacy-credits {
@@ -275,13 +367,28 @@
   line-height: 1.6;
 }
 
-.pharmacy-credits a {
+.pharmacy-credits a,
+.pharmacy-source a {
   text-decoration: underline;
   text-underline-offset: .14em;
 }
 
-.pharmacy-credits a:hover {
+.pharmacy-credits a:hover,
+.pharmacy-source a:hover {
   color: var(--accent);
+}
+
+.pharmacy-source {
+  color: var(--muted);
+  font-size: .8125rem;
+}
+
+.pharmacy-source a {
+  color: var(--foreground);
+}
+
+.pharmacy-details .pharmacy-source {
+  margin-top: .55rem;
 }
 
 .pharmacy-panel {
@@ -289,6 +396,7 @@
   border-radius: 12px;
   background: var(--surface);
   overflow-wrap: anywhere;
+  scrollbar-color: var(--border) var(--surface);
 }
 
 .pharmacy-results-heading,
@@ -328,19 +436,11 @@
   font-size: .75rem;
 }
 
-.pharmacy-distance-note span {
-  width: .55rem;
-  height: .55rem;
-  flex-shrink: 0;
-  border-radius: 50%;
-  background: var(--chart-secondary);
-}
-
 .pharmacy-results-list li {
   border-top: 1px solid var(--border);
 }
 
-.pharmacy-results-list button {
+.pharmacy-result-button {
   display: flex;
   width: 100%;
   min-height: 50px;
@@ -350,12 +450,12 @@
   text-align: start;
 }
 
-.pharmacy-results-list button:hover,
-.pharmacy-results-list button[aria-current="true"] {
+.pharmacy-result-button:hover,
+.pharmacy-result-button[aria-current="true"] {
   background: var(--accent-soft);
 }
 
-.pharmacy-results-list button:focus-visible {
+.pharmacy-result-button:focus-visible {
   outline-offset: -3px;
 }
 
@@ -382,7 +482,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-.pharmacy-results-list svg {
+.pharmacy-result-button svg {
   flex-shrink: 0;
   color: var(--subtle);
 }
@@ -441,12 +541,6 @@
   font-weight: 500;
 }
 
-.pharmacy-detail-warning {
-  margin-top: .65rem;
-  font-size: .8125rem;
-  font-weight: 500;
-}
-
 .pharmacy-actions {
   display: flex;
   flex-wrap: wrap;
@@ -455,8 +549,38 @@
   margin-top: .7rem;
 }
 
+.pharmacy-nearby-list .pharmacy-actions {
+  margin: 0;
+  padding: 0 .85rem .65rem;
+}
+
+.pharmacy-all-results {
+  border-top: 1px solid var(--border);
+}
+
+.pharmacy-all-results summary {
+  min-height: 44px;
+  padding: .75rem .85rem;
+  font-size: .8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pharmacy-all-results summary:focus-visible {
+  outline-offset: -3px;
+}
+
+.pharmacy-all-results summary span {
+  padding-inline-start: .25rem;
+  color: var(--muted);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
 @media (min-width: 36rem) {
-  .pharmacy-search { flex: 0 1 20rem; }
+  .pharmacy-locate,
+  .pharmacy-city-links { flex: 0 0 auto; }
+  .pharmacy-search { flex: 1 1 14rem; }
 }
 
 @media (min-width: 56rem) {
@@ -466,8 +590,9 @@
   }
 
   .pharmacy-heading h1 { font-size: 2.15rem; }
-  .pharmacy-workspace { grid-template-columns: minmax(0, 1fr) minmax(17rem, 29%); }
-  .pharmacy-list-shortcut { display: none; }
+  .pharmacy-workspace { grid-template-columns: minmax(0, 1fr) minmax(18rem, 33%); }
+  .pharmacy-map-column { grid-column: 1; grid-row: 1; }
+  .pharmacy-workspace .pharmacy-panel { grid-column: 2; grid-row: 1; }
   .pharmacy-panel {
     max-height: var(--map-height);
     overflow-y: auto;

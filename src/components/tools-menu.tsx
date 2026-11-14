@@ -2,14 +2,15 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ChevronDown, UsersRound } from "lucide-react";
 import { pharmacyIcon } from "@/lib/pharmacy-icon";
-import { instagramFollowCheckerPath } from "@/lib/site";
+import { instagramFollowCheckerPath, pharmacyPath } from "@/lib/site";
 
 const tools = [
   {
-    href: "/nobetci-eczaneler",
-    label: "İzmir Nöbetçi Eczaneler",
+    href: pharmacyPath,
+    label: "Nöbetçi Eczane Bul",
     lang: "tr",
     icon: (
       <svg width={18} height={18} viewBox="0 0 24 24" className="shrink-0" aria-hidden="true">
@@ -33,6 +34,7 @@ function closeAndFocusTrigger(menu: HTMLDetailsElement) {
 
 export function ToolsMenu({ label = "Tools", currentPath }: { label?: string; currentPath?: string }) {
   const menuRef = useRef<HTMLDetailsElement>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     const menu = menuRef.current;
@@ -64,7 +66,7 @@ export function ToolsMenu({ label = "Tools", currentPath }: { label?: string; cu
       </summary>
       <ul className="absolute end-0 top-full z-10 w-max max-w-full rounded-xl border border-border bg-surface p-1">
         {tools.map(tool => {
-          const isCurrent = currentPath === tool.href;
+          const isCurrent = (currentPath ?? pathname) === tool.href;
           return (
             <li key={tool.href}>
               <Link

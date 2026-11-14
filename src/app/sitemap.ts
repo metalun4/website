@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
-import { instagramFollowCheckerPath, siteContentUpdated, siteUrl } from "@/lib/site";
+import { pharmacyCityPath, pharmacyCitySlugs } from "@/lib/pharmacy-cities";
+import { instagramFollowCheckerPath, pharmacyPath, siteContentUpdated, siteUrl } from "@/lib/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
@@ -10,9 +11,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
-      url: `${siteUrl}/nobetci-eczaneler`,
+      url: `${siteUrl}${pharmacyPath}`,
       changeFrequency: "daily",
     },
+    ...pharmacyCitySlugs.map(city => ({ url: `${siteUrl}${pharmacyCityPath(city)}`, changeFrequency: "daily" as const })),
     {
       url: `${siteUrl}${instagramFollowCheckerPath}`,
       lastModified: "2026-11-08",

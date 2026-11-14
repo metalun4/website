@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test:access": "node scripts/test-access.mjs",
-    "test:instagram": "playwright test",
+    "test:instagram": "playwright test instagram-follow-checker.spec.ts",
+    "test:pharmacies": "playwright test pharmacy-finder.spec.ts",
     "test": "node --import tsx --test --test-concurrency=1 tests/*.test.ts",
     "prebuild": "node scripts/build-pdf-worker.mjs",
     "predev": "node scripts/build-pdf-worker.mjs"

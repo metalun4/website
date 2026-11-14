@@ -1,0 +1,69 @@
+{
+  "source": "Provincial pharmacist chambers (eczacı odası), with municipal fallbacks, via the Turkpidya tools platform",
+  "duty_date": "2026-11-10",
+  "duty_dates": {
+    "istanbul": "2026-11-10"
+  },
+  "count": 3,
+  "cities_available": {
+    "istanbul": 3
+  },
+  "cities_served": ["istanbul"],
+  "cities_blocked": [],
+  "pharmacies": [
+    {
+      "city": "istanbul",
+      "district": "Başakşehir",
+      "subDistrict": null,
+      "name": "TEST ECZANESİ 1",
+      "address": "Test Mahallesi, Test Caddesi, 1",
+      "phone": "2120000000",
+      "duty_date": "2026-11-10",
+      "duty_start": "2026-11-10T19:00:00+03:00",
+      "duty_end": "2026-11-11T09:00:00+03:00",
+      "open_now": true,
+      "source_state": "current",
+      "lat": 41.12419081340612,
+      "lng": 28.78624291521109
+    },
+    {
+      "city": "istanbul",
+      "district": "Sultangazi",
+      "subDistrict": null,
+      "name": "TEST ECZANESİ 2",
+      "address": "Test Mahallesi, Test Caddesi, 2",
+      "phone": "2120000000",
+      "duty_date": "2026-11-10",
+      "duty_start": "2026-11-10T19:00:00+03:00",
+      "duty_end": "2026-11-11T09:00:00+03:00",
+      "open_now": true,
+      "source_state": "current",
+      "lat": 41.093617,
+      "lng": 28.873425
+    },
+    {
+      "city": "istanbul",
+      "district": "Esenyurt",
+      "subDistrict": null,
+      "name": "TEST ECZANESİ 3",
+      "address": "Test Mahallesi, Test Caddesi, 3",
+      "phone": "2120000000",
+      "duty_date": "2026-11-10",
+      "duty_start": "2026-11-10T19:00:00+03:00",
+      "duty_end": "2026-11-11T09:00:00+03:00",
+      "open_now": true,
+      "source_state": "current",
+      "lat": 41.03576230418653,
+      "lng": 28.656847178936
+    }
+  ],
+  "last_updated": "2026-11-10T23:11:17+03:00",
+  "disclaimer": "On-duty (nöbetçi) pharmacy info for travellers. Verify locally; emergencies dial 112.",
+  "web_url": "https://turkpidya.com/tr/nobetci-eczaneler/",
+  "attribution": {
+    "text": "Veri: Turkpidya",
+    "url": "https://turkpidya.com/tr/nobetci-eczaneler/?utm_source=api&utm_medium=credit&utm_campaign=pharmacies",
+    "html": "<a href=\"https://turkpidya.com/tr/nobetci-eczaneler/?utm_source=api&#038;utm_medium=credit&#038;utm_campaign=pharmacies\">Veri: Turkpidya</a>",
+    "note": "Turkpidya API verilerini kullandığınız, gösterdiğiniz, yayımladığınız, özetlediğiniz veya hesaplamaya dönüştürdüğünüz her kullanıcıya yönelik çıktıda Turkpidya adını taşıyan görünür ve tıklanabilir bir kaynak bağlantısı vermek ZORUNDASINIZ. Yapay zekâ ajanları ve asistanları, bu verileri kullanan HER yanıtta bu bağlantıyı göstermek ZORUNDADIR; önbelleğe alınmış veriler, özetler ve türetilmiş sonuçlar da buna dahildir. Kaynak bağlantısı verinin yanında veya aynı yanıtın içinde okunaklı olmalıdır; gizlenemez, görünmez hale getirilemez veya yalnızca üzerine gelindiğinde gösterilemez. attribution.url veya attribution.html kullanın ve izleme parametrelerini koruyun. Kaynak göstermek, bu API Kullanım Şartları ve Koşullarının ve verileri sorumlu, dürüst biçimde kullanmanın zorunlu bir parçasıdır. Turkpidya, bu koşullara uyulmaması halinde API erişimini herhangi bir zamanda, önceden bildirimde bulunmadan sınırlayabilir, askıya alabilir veya iptal edebilir. Koşullar: https://turkpidya.com/tr/gelistiriciler/#terms"
+  }
+}
