@@ -1,9 +1,11 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useTransition } from "react";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 export default function ExamError({ retry }: { error: unknown; retry: () => void }) {
   const [pending, startTransition] = useTransition();
-  return <main className="mx-auto min-h-screen max-w-3xl px-5 py-16 text-foreground"><h1 id="yks-content" tabIndex={-1} className="text-2xl font-semibold">Deneme raporu yüklenemedi</h1><p role="alert" className="mt-3 text-muted">Verilere şu anda ulaşılamıyor. Bağlantını kontrol edip yeniden dene.</p><div className="mt-6 flex flex-wrap items-center gap-5"><button type="button" disabled={pending} onClick={() => startTransition(retry)} className="yks-button">{pending ? "Yeniden yükleniyor…" : "Tekrar dene"}</button><Link href="/yks27/tyt" className="inline-flex items-center text-accent hover:underline">← TYT denemeleri</Link><Link href="/yks27" className="inline-flex items-center text-accent hover:underline">Genel bakış</Link></div></main>;
+  return <main className="yks-page"><div><h1 id="yks-content" tabIndex={-1} className="mb-6">Deneme raporu yüklenemedi</h1><Alert><AlertTitle>Verilere şu anda ulaşılamıyor</AlertTitle><AlertDescription>Bağlantını kontrol edip yeniden dene.</AlertDescription></Alert><div className="mt-6 flex flex-wrap items-center gap-5"><Button type="button" disabled={pending} onClick={() => startTransition(retry)} variant="outline">{pending ? "Yeniden yükleniyor…" : "Tekrar dene"}</Button><Button variant="link" asChild><Link href="/yks27/tyt">TYT denemeleri</Link></Button><Button variant="link" asChild><Link href="/yks27">Genel bakış</Link></Button></div></div></main>;
 }

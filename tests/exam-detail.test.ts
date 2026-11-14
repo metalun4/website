@@ -70,7 +70,7 @@ test("question rendering includes exactly 120 rows, canonical review labels and 
   assert.match(html, /Bağlantı yok/);
   assert.doesNotMatch(html, /javascript:/);
   assert.match(html, /rel="noopener noreferrer"/);
-  assert.match(html, /aria-pressed="true"/);
+  assert.match(html, /aria-checked="true"/);
   assert.match(html, /href="#questions-tyt_geometry"/);
   assert.doesNotMatch(html, /review-heading|Tekrar edilecek konular/);
   assert.match(html, /<section[^>]*aria-labelledby="subject-jump-heading"/);

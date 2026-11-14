@@ -41,7 +41,7 @@ const ChartTable = memo(function ChartTable({ title, exams, series, unit }: {
         <caption className="sr-only">{title}</caption>
         <thead><tr><th scope="col" className="p-2">Deneme</th>{series.map(item => <th scope="col" key={item.label} className="p-2 text-right">{item.label}</th>)}</tr></thead>
         <tbody>{exams.map((exam, index) => <tr key={exam.id} className="border-t border-border">
-          <th scope="row" className="min-w-32 p-2 font-normal"><Link href={`/yks27/tyt/${exam.id}`} prefetch={false} className="block break-words hover:underline">{exam.name}</Link><span className="text-subtle">{dateLabel(exam.date)}</span></th>
+          <th scope="row" className="min-w-32 p-2 font-normal"><Link href={`/yks27/tyt/${exam.id}`} prefetch={false} className="yks-action-link block break-words hover:underline">{exam.name}</Link><span className="text-subtle">{dateLabel(exam.date)}</span></th>
           {series.map(item => <td key={item.label} className="p-2 text-right whitespace-nowrap tabular-nums">{chartValue(item.values[index], unit)}</td>)}
         </tr>)}</tbody>
       </table>
@@ -178,7 +178,7 @@ export default function Chart({ exams, title, description, series, unit = "", do
         </g> : null}
       </svg> : null}
       {active ? <div className="pointer-events-none absolute top-1.5 z-2 max-w-[94%] rounded-lg border border-subtle bg-surface p-3 text-xs text-foreground shadow-lg shadow-foreground/10" aria-hidden="true" style={{ left: `clamp(0px, calc(${(active.x / model.width) * 100}% - ${tooltipWidth / 2}px), calc(100% - ${tooltipWidth}px))`, width: tooltipWidth }}>
-        <Link href={`/yks27/tyt/${active.id}`} prefetch={false} tabIndex={-1} className="pointer-events-auto block break-words text-xs font-semibold hover:underline">{active.name}</Link>
+        <Link href={`/yks27/tyt/${active.id}`} prefetch={false} tabIndex={-1} className="yks-action-link pointer-events-auto block break-words text-xs font-semibold hover:underline">{active.name}</Link>
         <small className="mt-1 mb-2.5 block text-subtle">{active.dateText}</small>
         {series.map((item, index) => <div className="mt-2 flex justify-between gap-2.5" key={item.label}><span className="flex min-w-0 items-center gap-1.5 text-muted"><SeriesSwatch series={item} index={index} /><span className="break-words">{item.label}</span></span><b className="shrink-0 font-medium tabular-nums">{chartValue(item.values[activeIndex], unit)}</b></div>)}
       </div> : null}

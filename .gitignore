@@ -15,6 +15,8 @@ node_modules/
 /playwright-report/
 /test-results/
 /tests/fixtures/tyt/*.pdf
+/tests/fixtures/tyt/pdfs/
+/.impeccable/review/isolated-session.json
 /src/lib/exam-import/pdf-worker.generated.mjs
 /supabase/.temp/
 .nyc_output/
@@ -22,6 +24,7 @@ node_modules/
 
 # Build output and caches
 .next/
+.next-isolated/
 /out/
 /build/
 /dist/
@@ -124,3 +127,8 @@ codex-security-scans/
 # Generated TypeScript files
 *.tsbuildinfo
 next-env.d.ts
+
+# Impeccable agent run artifacts
+/.impeccable/qa/
+/.impeccable/build/
+/.impeccable/mocks/

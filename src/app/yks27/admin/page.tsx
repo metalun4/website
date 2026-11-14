@@ -4,7 +4,6 @@ import { requireAdmin, getAdminPins } from "@/lib/session";
 import { getExams } from "@/lib/exams";
 import { PinForm, RemoveButton } from "../forms";
 import { ImportForm } from "./import-form";
-import { AccountBar } from "../tyt/account-bar";
 import { dateLabel } from "../tyt/data";
 
 export const metadata: Metadata = { title: "Yönetim | YKS 2027", robots: { index: false, follow: false } };
@@ -15,7 +14,6 @@ export default async function Admin() {
   await requireAdmin();
   const [exams, pins] = await Promise.all([getExams(), getAdminPins()]);
   return <main className="yks-page"><div className="mx-auto max-w-5xl">
-    <AccountBar admin />
     <header className="mb-6"><h1 id="yks-content" tabIndex={-1} className="text-3xl font-semibold">Yönetim</h1></header>
     <nav aria-label="Yönetim bölümleri" className="yks-jump-links mb-6"><a href="#import">Deneme ekle</a><Link href="/yks27/admin/topics">Konu yönetimi</Link><a href="#viewer-access">İzleyici erişimi</a><a href="#exam-records">Kayıtlar ({exams.length})</a></nav>
     <section id="import" className="yks-panel mb-7 scroll-mt-6"><h2 className="mb-3 text-xl font-semibold">PDF’den deneme ekle</h2><p className="mb-5 text-muted">Raporu seç, sonuçları önizle ve doğruladıktan sonra içe aktar.</p><ImportForm /></section>

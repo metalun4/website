@@ -1,3 +1,4 @@
+import { Table, TableHeader, TableBody, TableFooter, TableRow, TableHead, TableCell, TableCaption } from "@/components/ui/table";
 import { number, subjects, type calculateExam } from "./data";
 
 export function SubjectResults({ exam }: { exam: ReturnType<typeof calculateExam> }) {
@@ -10,15 +11,15 @@ export function SubjectResults({ exam }: { exam: ReturnType<typeof calculateExam
       </div>;
     })}</dl>
     <div className="hidden overflow-x-auto md:block" role="region" aria-label={`${exam.name} ders sonuçları`} tabIndex={0}>
-      <table className="yks-results-table w-full text-sm">
-        <caption className="sr-only">{exam.name} ders sonuçları ve toplamı</caption>
-        <thead><tr><th scope="col">Ders</th>{["Soru", "Doğru", "Yanlış", "Boş", "Net", "Ortalama"].map(label => <th scope="col" key={label}>{label}</th>)}</tr></thead>
-        <tbody>{subjects.map((subject, i) => {
+      <Table className="yks-results-table w-full text-sm">
+        <TableCaption className="sr-only">{exam.name} ders sonuçları ve toplamı</TableCaption>
+        <TableHeader><TableRow><TableHead scope="col">Ders</TableHead>{["Soru", "Doğru", "Yanlış", "Boş", "Net", "Ortalama"].map(label => <TableHead scope="col" key={label}>{label}</TableHead>)}</TableRow></TableHeader>
+        <TableBody>{subjects.map((subject, i) => {
           const result = exam.subjects[i];
-          return <tr key={subject.key}><th scope="row">{subject.label}</th><td>{subject.questions}</td><td>{number(result.correct, 0)}</td><td>{number(result.incorrect, 0)}</td><td>{number(result.empty, 0)}</td><td className="font-semibold text-accent">{number(result.net)}</td><td className="text-muted">{number(result.average)}</td></tr>;
-        })}</tbody>
-        <tfoot><tr><th scope="row">Toplam</th><td>120</td><td>{number(exam.correct, 0)}</td><td>{number(exam.incorrect, 0)}</td><td>{number(exam.empty, 0)}</td><td className="text-accent">{number(exam.net)}</td><td>{number(exam.average)}</td></tr></tfoot>
-      </table>
+          return <TableRow key={subject.key}><TableHead scope="row">{subject.label}</TableHead><TableCell>{subject.questions}</TableCell><TableCell>{number(result.correct, 0)}</TableCell><TableCell>{number(result.incorrect, 0)}</TableCell><TableCell>{number(result.empty, 0)}</TableCell><TableCell className="font-semibold text-accent">{number(result.net)}</TableCell><TableCell className="text-muted">{number(result.average)}</TableCell></TableRow>;
+        })}</TableBody>
+        <TableFooter><TableRow><TableHead scope="row">Toplam</TableHead><TableCell>120</TableCell><TableCell>{number(exam.correct, 0)}</TableCell><TableCell>{number(exam.incorrect, 0)}</TableCell><TableCell>{number(exam.empty, 0)}</TableCell><TableCell className="text-accent">{number(exam.net)}</TableCell><TableCell>{number(exam.average)}</TableCell></TableRow></TableFooter>
+      </Table>
     </div>
   </>;
 }

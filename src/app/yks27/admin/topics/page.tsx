@@ -1,3 +1,6 @@
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/session";
@@ -7,7 +10,6 @@ import { combineTopics, metricsOf } from "@/lib/topic-stats";
 import { topicSubjectAllowed, type TopicCatalog } from "@/lib/topic-view";
 import { queryValue, type Query } from "@/lib/yks-navigation";
 import { number } from "../../tyt/data";
-import { AccountBar } from "../../tyt/account-bar";
 import { assignTopic, clearTopicGroup, deleteTopicAlias, saveTopicAlias } from "../topic-actions";
 
 export const metadata: Metadata = { title: "Konu Yönetimi | YKS 2027", robots: { index: false, follow: false } };
@@ -37,22 +39,22 @@ function TopicForms({ topic, groups, subject, q }: { topic: TopicCatalog["topics
       {subject ? <input type="hidden" name="subject" value={subject} /> : null}
       {q ? <input type="hidden" name="q" value={q} /> : null}
       <label className="block min-w-0 text-sm">Grup
-        <select name="groupId" defaultValue={topic.groupId ?? ""} required={topic.groupId === null} className="yks-input mt-1" aria-label={`${topic.name} için grup`}>
-          {topic.groupId === null ? <option value="">Grup seç</option> : null}
-          {groups.map(group => <option key={group.id} value={group.id}>{group.name}</option>)}
-        </select>
+        <NativeSelect name="groupId" defaultValue={topic.groupId ?? ""} required={topic.groupId === null} className=" mt-1" aria-label={`${topic.name} için grup`}>
+          {topic.groupId === null ? <NativeSelectOption value="">Grup seç</NativeSelectOption> : null}
+          {groups.map(group => <NativeSelectOption key={group.id} value={group.id}>{group.name}</NativeSelectOption>)}
+        </NativeSelect>
       </label>
       <div className="flex flex-wrap items-center gap-3">
-        <label className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" name="confirm" value="yes" required /> Geçmiş sorular bu grupta sayılsın</label>
-        <button className="yks-button" aria-label={`${topic.name}: Gruba bağla`}>Gruba bağla</button>
+        <label className="flex min-h-11 items-center gap-2 text-sm"><Input type="checkbox" name="confirm" value="yes" required /> Geçmiş sorular bu grupta sayılsın</label>
+        <Button variant="outline" aria-label={`${topic.name}: Gruba bağla`}>Gruba bağla</Button>
       </div>
     </form>
     {topic.groupId ? <form action={clearTopicGroup} className="mt-3 flex flex-wrap items-center gap-3">
       <input type="hidden" name="topicId" value={topic.id} />
       {subject ? <input type="hidden" name="subject" value={subject} /> : null}
       {q ? <input type="hidden" name="q" value={q} /> : null}
-      <label className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" name="confirm" value="yes" required /> Geçmiş sorular grup toplamından çıksın</label>
-      <button className="yks-button" aria-label={`${topic.name}: Gruptan çıkar`}>Gruptan çıkar</button>
+      <label className="flex min-h-11 items-center gap-2 text-sm"><Input type="checkbox" name="confirm" value="yes" required /> Geçmiş sorular grup toplamından çıksın</label>
+      <Button variant="outline" aria-label={`${topic.name}: Gruptan çıkar`}>Gruptan çıkar</Button>
     </form> : null}
   </article>;
 }
@@ -72,7 +74,6 @@ export default async function TopicAdminPage({ searchParams }: { searchParams: P
   const subjectOptions = catalog.subjects.filter(item => catalog.groups.some(group => group.subjectId === item.id)).sort((a, b) => a.displayOrder - b.displayOrder);
   const visibleSubjects = subject ? subjectOptions.filter(item => item.id === subject) : subjectOptions;
   return <main className="yks-page"><div className="mx-auto max-w-5xl">
-    <AccountBar admin />
     <header className="mb-6">
       <nav aria-label="İçerik yolu" className="mb-3"><ol className="flex flex-wrap items-center gap-2 text-xs text-muted"><li><Link href="/yks27/admin" className="inline-flex items-center hover:text-accent">Yönetim</Link></li><li aria-hidden="true">/</li><li aria-current="page">Konu yönetimi</li></ol></nav>
       <h1 id="yks-content" tabIndex={-1} className="text-3xl font-semibold tracking-tight">Konu Yönetimi</h1>
@@ -82,15 +83,15 @@ export default async function TopicAdminPage({ searchParams }: { searchParams: P
     {notice ? <p role="status" className="mb-4 rounded-lg border border-border bg-surface-muted px-4 py-3">{notice}</p> : null}
     <form action="/yks27/admin/topics" className="yks-panel mb-6 grid gap-3 sm:grid-cols-[minmax(0,16rem)_minmax(0,1fr)_auto] sm:items-end">
       <label className="block min-w-0">Ders
-        <select name="subject" defaultValue={subject} className="yks-input mt-1">
-          <option value="">Tüm dersler</option>
-          {subjectOptions.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
-        </select>
+        <NativeSelect name="subject" defaultValue={subject} className=" mt-1">
+          <NativeSelectOption value="">Tüm dersler</NativeSelectOption>
+          {subjectOptions.map(item => <NativeSelectOption key={item.id} value={item.id}>{item.name}</NativeSelectOption>)}
+        </NativeSelect>
       </label>
       <label className="block min-w-0">Konu veya takma ad ara
-        <input type="search" name="q" defaultValue={q} maxLength={100} autoComplete="off" placeholder="Örn. kök…" className="yks-input mt-1" />
+        <Input type="search" name="q" defaultValue={q} maxLength={100} autoComplete="off" placeholder="Örn. kök…" className=" mt-1" />
       </label>
-      <button className="yks-button">Filtrele</button>
+      <Button variant="outline">Filtrele</Button>
     </form>
     <p className="mb-6 text-sm text-muted tabular-nums">{number(catalog.groups.filter(group => inSubject(group.subjectId)).length, 0)} grup · {number(topics.filter(topic => topic.groupId).length, 0)} bağlı konu · {number(topics.filter(topic => !topic.groupId).length, 0)} grupsuz konu · {number(catalog.aliases.filter(alias => inSubject(alias.subjectId)).length, 0)} takma ad</p>
     <section id="gruplanmamis" aria-labelledby="unassigned-heading" className="yks-panel mb-6 scroll-mt-6">
@@ -108,11 +109,11 @@ export default async function TopicAdminPage({ searchParams }: { searchParams: P
       if (needle && shown.length === 0) return null;
       return <section key={subjectRow.id} aria-labelledby={`subject-${subjectRow.id}`} className="mb-8">
         <h2 id={`subject-${subjectRow.id}`} className="text-xl font-semibold">{subjectRow.name}</h2>
-        <div className="mt-3 space-y-3">{(needle ? shown : groups).map(group => {
+        <div className="mt-3 flex flex-col gap-3">{(needle ? shown : groups).map(group => {
           const members = topics.filter(topic => topic.groupId === group.id && (!needle || matches(group.name, topic.name)));
           const aliases = catalog.aliases.filter(alias => alias.groupId === group.id && (!needle || matches(group.name, alias.alias)));
           const totals = combineTopics(topics.filter(topic => topic.groupId === group.id));
-          return <details key={group.id} id={`grup-${group.id}`} open={Boolean(needle)} className="yks-topic-card scroll-mt-6 rounded-xl border border-border bg-surface">
+          return <details key={group.id} id={`grup-${group.id}`} open={Boolean(needle)} className="scroll-mt-6 rounded-xl border border-border bg-surface">
             <summary className="min-h-11 cursor-pointer px-4 py-4 hover:bg-surface-muted"><span className="block break-words font-semibold">{group.name}</span><span className="mt-1 block text-sm text-muted tabular-nums">{number(members.length, 0)} görünen konu · {number(totals.valid + totals.cancelled, 0)} soru</span></summary>
             <div className="border-t border-border px-4 pb-4">
               {members.length === 0 ? <p className="pt-4 text-sm text-muted">Bu grupta içe aktarılmış konu yok.</p> : members.map(topic => <TopicForms key={topic.id} topic={topic} groups={groups} subject={subject} q={q} />)}
@@ -125,8 +126,8 @@ export default async function TopicAdminPage({ searchParams }: { searchParams: P
                   <input type="hidden" name="groupId" value={group.id} />
                   {subject ? <input type="hidden" name="subject" value={subject} /> : null}
                   {q ? <input type="hidden" name="q" value={q} /> : null}
-                  <label className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" name="confirm" value="yes" required /> Silmeyi onayla</label>
-                  <button className="yks-button" aria-label={`${alias.alias}: Takma adı sil`}>Takma adı sil</button>
+                  <label className="flex min-h-11 items-center gap-2 text-sm"><Input type="checkbox" name="confirm" value="yes" required /> Silmeyi onayla</label>
+                  <Button variant="outline" aria-label={`${alias.alias}: Takma adı sil`}>Takma adı sil</Button>
                 </form>
               </li>)}</ul>}
               <form action={saveTopicAlias} className="mt-4 grid gap-3">
@@ -135,11 +136,11 @@ export default async function TopicAdminPage({ searchParams }: { searchParams: P
                 {subject ? <input type="hidden" name="subject" value={subject} /> : null}
                 {q ? <input type="hidden" name="q" value={q} /> : null}
                 <label className="block text-sm">Yeni takma ad
-                  <input name="alias" required maxLength={300} autoComplete="off" placeholder="Yayınevinin kullandığı etiket…" className="yks-input mt-1" />
+                  <Input name="alias" required maxLength={300} autoComplete="off" placeholder="Yayınevinin kullandığı etiket…" className=" mt-1" />
                 </label>
                 <div className="flex flex-wrap items-center gap-3">
-                  <label className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" name="confirm" value="yes" required /> Bu etiketi gruba bağla</label>
-                  <button className="yks-button">Takma ad ekle</button>
+                  <label className="flex min-h-11 items-center gap-2 text-sm"><Input type="checkbox" name="confirm" value="yes" required /> Bu etiketi gruba bağla</label>
+                  <Button variant="outline">Takma ad ekle</Button>
                 </div>
               </form>
             </div>

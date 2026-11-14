@@ -1,12 +1,13 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useActionState, useState, type DragEvent } from "react";
 import Link from "next/link";
 import { importPdf, type ImportState } from "./import-actions";
 import { SUBJECTS } from "@/lib/exam-import/types";
 import { dateLabel, number } from "../tyt/data";
 
-const button = "min-h-11 rounded-lg border border-border bg-surface-emphasis px-4 py-2.5 font-medium hover:bg-surface-muted disabled:opacity-50";
 const scopeNames = { general: "Genel", institution: "Kurum", branch: "Şube", class: "Sınıf" };
 export function ImportForm() {
   const [file, setFile] = useState<File | null>(null);
@@ -26,8 +27,8 @@ export function ImportForm() {
   return <div><div onDragOver={e => e.preventDefault()} onDrop={drop} className="rounded-xl border border-dashed border-border bg-background p-5">
     <label className="block font-medium" htmlFor="exam-pdf">TYT karnesi (PDF, en fazla 2 MiB)</label>
     <p className="my-2 text-muted">İki sayfalık bireysel karneyi buraya bırakın veya dosya seçin.</p>
-    <input id="exam-pdf" type="file" accept="application/pdf,.pdf" disabled={busy} onChange={e => choose(e.target.files?.[0])} className="block max-w-full text-sm file:mr-3 file:min-h-11 file:rounded-lg file:border file:border-border file:bg-surface file:px-4 file:text-foreground focus-visible:outline-2 focus-visible:outline-accent" />
-    {selectionError && <p role="alert" className="mt-2 text-red-600 dark:text-red-400">{selectionError}</p>}
+    <Input id="exam-pdf" type="file" accept="application/pdf,.pdf" disabled={busy} onChange={e => choose(e.target.files?.[0])} className="block max-w-full text-sm file:mr-3 file:min-h-11 file:rounded-lg file:border file:border-border file:bg-surface file:px-4 file:text-foreground focus-visible:outline-2 focus-visible:outline-accent" />
+    {selectionError && <p role="alert" className="mt-2 text-incorrect">{selectionError}</p>}
   </div><ImportReview key={version} file={file} onBusy={setBusy} /></div>;
 }
 function ImportReview({ file, onBusy }: { file: File | null; onBusy: (busy: boolean) => void }) {
@@ -39,11 +40,11 @@ function ImportReview({ file, onBusy }: { file: File | null; onBusy: (busy: bool
     finally { onBusy(false); }
   }, {});
   const preview = state.preview;
-  return <form action={action} className="mt-5 space-y-5" aria-busy={pending}>
+  return <form action={action} className="mt-5 flex flex-col gap-5" aria-busy={pending}>
     {file && <p className="break-all text-muted">Seçilen dosya: {file.name}</p>}
-    <div aria-live="polite">{state.error && <p role="alert" className="text-red-600 dark:text-red-400">{state.error}</p>}{state.success && <p role="status">{state.success} <Link href="/yks27/tyt" className="underline">Denemeleri görüntüle</Link></p>}{pending && <p role="status">{preview ? "Rapor doğrulanıyor ve kaydediliyor…" : "PDF okunuyor ve doğrulanıyor…"}</p>}</div>
-    {!state.success && <button name="mode" value="preview" disabled={!file || pending} className={button}>{preview ? "Yeniden önizle" : "PDF’yi önizle"}</button>}
-    {preview && <section aria-label="İçe aktarma önizlemesi" className="space-y-4 rounded-xl border border-border p-4">
+    <div aria-live="polite">{state.error && <p role="alert" className="text-incorrect">{state.error}</p>}{state.success && <p role="status">{state.success} <Link href="/yks27/tyt" className="underline">Denemeleri görüntüle</Link></p>}{pending && <p role="status">{preview ? "Rapor doğrulanıyor ve kaydediliyor…" : "PDF okunuyor ve doğrulanıyor…"}</p>}</div>
+    {!state.success && <Button name="mode" value="preview" disabled={!file || pending} >{preview ? "Yeniden önizle" : "PDF’yi önizle"}</Button>}
+    {preview && <section aria-label="İçe aktarma önizlemesi" className="flex flex-col gap-4 rounded-xl border border-border p-4">
       <h3 className="break-words text-lg font-semibold">{preview.exam.name}</h3>
       <p>{dateLabel(preview.exam.exam_date)} · {preview.exam.institution_name} · {preview.exam.class_label}</p>
       <p>Puan: {number(preview.exam.score)} · Net: {number(preview.exam.total_net)} · Rapor ortalaması: {number(preview.exam.average_net)}</p>
@@ -55,9 +56,9 @@ function ImportReview({ file, onBusy }: { file: File | null; onBusy: (busy: bool
       <ReviewLabels labels={preview.reviewTopics} />
       <UnassignedLabels labels={preview.unassignedLabels} />
       {preview.duplicate && <p role="status">Bu rapor zaten kayıtlı. Onaylandığında mevcut kayıt korunur.</p>}
-      {preview.collision && <p role="alert" className="text-red-600 dark:text-red-400">Mevcut bir sınavla olası çakışma bulundu. Tarihi ve sonuçları karşılaştırın; çakışma giderilmeden içe aktarılamaz.</p>}
+      {preview.collision && <p role="alert" className="text-incorrect">Mevcut bir sınavla olası çakışma bulundu. Tarihi ve sonuçları karşılaştırın; çakışma giderilmeden içe aktarılamaz.</p>}
       <input type="hidden" name="receipt" value={preview.receipt} />
-      <button name="mode" value="confirm" disabled={pending || preview.collision} className={button}>{preview.duplicate ? "Mevcut kaydı doğrula" : "Onayla ve içe aktar"}</button>
+      <Button name="mode" value="confirm" disabled={pending || preview.collision} >{preview.duplicate ? "Mevcut kaydı doğrula" : "Onayla ve içe aktar"}</Button>
     </section>}
     {state.reviewTopics && <ReviewLabels labels={state.reviewTopics.map(t => `${SUBJECTS.find(s => s.id === t.subject_id)?.name ?? t.subject_id}: ${t.name}`)} />}
     {state.unassignedTopics && <UnassignedLabels labels={state.unassignedTopics.map(t => `${SUBJECTS.find(s => s.id === t.subject_id)?.name ?? t.subject_id}: ${t.name}`)} />}
@@ -65,9 +66,9 @@ function ImportReview({ file, onBusy }: { file: File | null; onBusy: (busy: bool
 }
 function UnassignedLabels({ labels }: { labels: string[] }) {
   if (!labels.length) return null;
-  return <details className="rounded-lg border border-border p-3"><summary className="min-h-6 cursor-pointer font-medium">Gruba bağlanmayan konular ({labels.length})</summary><p className="my-2 text-muted">Bu etiketler olduğu gibi saklanır. Konu yönetiminden bir gruba bağlayabilirsin.</p><ul className="list-inside list-disc space-y-1">{labels.map(label => <li key={label} className="break-words">{label}</li>)}</ul><Link href="/yks27/admin/topics" className="mt-2 inline-flex text-accent hover:underline">Konu yönetimine git</Link></details>;
+  return <details className="rounded-lg border border-border p-3"><summary className="min-h-6 cursor-pointer font-medium">Gruba bağlanmayan konular ({labels.length})</summary><p className="my-2 text-muted">Bu etiketler olduğu gibi saklanır. Konu yönetiminden bir gruba bağlayabilirsin.</p><ul className="list-inside list-disc flex flex-col gap-1">{labels.map(label => <li key={label} className="break-words">{label}</li>)}</ul><Link href="/yks27/admin/topics" className="mt-2 inline-flex text-accent hover:underline">Konu yönetimine git</Link></details>;
 }
 function ReviewLabels({ labels }: { labels: string[] }) {
   if (!labels.length) return null;
-  return <details className="rounded-lg border border-border p-3"><summary className="min-h-6 cursor-pointer font-medium">İnceleme gerektiren konular ({labels.length})</summary><p className="my-2 text-muted">Kesilmiş etiketler genişletilmeden, geçici konu olarak saklanır.</p><ul className="list-inside list-disc space-y-1">{labels.map(label => <li key={label} className="break-words">{label}</li>)}</ul></details>;
+  return <details className="rounded-lg border border-border p-3"><summary className="min-h-6 cursor-pointer font-medium">İnceleme gerektiren konular ({labels.length})</summary><p className="my-2 text-muted">Kesilmiş etiketler genişletilmeden, geçici konu olarak saklanır.</p><ul className="list-inside list-disc flex flex-col gap-1">{labels.map(label => <li key={label} className="break-words">{label}</li>)}</ul></details>;
 }

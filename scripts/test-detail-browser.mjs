@@ -21,11 +21,11 @@ export async function testDetailBrowser({ origin, cookie, detailPath, cancelledP
       assert.equal(await page.locator('[data-question]').count(), 120);
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `Page overflow at ${width}px`);
       for (const [label, count] of [["Doğru", expected.exam.total_correct], ["Yanlış", expected.exam.total_wrong], ["Boş", expected.exam.total_blank], ["İptal", 0], ["Tümü", 120]]) {
-        const button = page.getByRole("button", { name: label, exact: true });
+        const button = page.getByRole("radio", { name: label, exact: true });
         await button.focus();
         await page.keyboard.press("Enter");
         await page.waitForFunction(n => document.querySelectorAll('[data-question]').length === n, count);
-        assert.equal(await button.getAttribute("aria-pressed"), "true");
+        assert.equal(await button.getAttribute("aria-checked"), "true");
       }
       await page.getByRole("link", { name: "Geometri (10)", exact: true }).click();
       assert.equal(new URL(page.url()).hash, "#questions-tyt_geometry");
@@ -38,7 +38,7 @@ export async function testDetailBrowser({ origin, cookie, detailPath, cancelledP
     }
     await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
     await page.goto(origin + cancelledPath);
-    await page.getByRole("button", { name: "İptal", exact: true }).click();
+    await page.getByRole("radio", { name: "İptal", exact: true }).click();
     await page.waitForFunction(() => document.querySelectorAll('[data-question]').length === 2);
     assert.equal(await page.getByRole("cell", { name: "İptal · Doğru sayıldı", exact: true }).count(), 2);
     assert.deepEqual(errors, [], "No hydration or client exceptions");

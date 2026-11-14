@@ -9,83 +9,14 @@ import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { homedir } from "node:os";
 import { createRequire } from "node:module";
-import { PGlite } from "@electric-sql/pglite";
+import { createIsolatedAdapter } from "./isolated-adapter.mjs";
 const require = createRequire(import.meta.url);
 const { encodeReply } = require("next/dist/compiled/react-server-dom-turbopack/client.browser");
-const db = new PGlite();
-await db.exec("create role anon;create role authenticated;create role service_role bypassrls;");
-await db.exec(await readFile("supabase/schema.sql", "utf8"));
-const adminId = randomUUID(), key = "isolated-server-credential-for-tests";
-let limited = false;
-let failDetail = false;
-let detailWrites = 0;
-const reads = new Map();
-const api = createServer(async (req,res) => {
-  res.setHeader("Content-Type","application/json");
-  try {
-    assert.equal(req.headers.apikey,key);
-    const url = new URL(req.url,"http://localhost");
-    let raw="";for await(const c of req) raw+=c;
-    const body=raw?JSON.parse(raw):null;
-    if(url.pathname==="/auth/v1/token") {
-      if(body.email!=="admin@example.test"||body.password!=="test-password")return res.writeHead(400).end("{}");
-      return res.end(JSON.stringify({user:{id:adminId}}));
-    }
-    const name=url.pathname.split("/").at(-1);
-    if(req.method==="GET") reads.set(name,(reads.get(name)??0)+1);
-    else if(["exams","exam_questions","exam_subject_results","exam_rankings","subjects","topics"].includes(name)) detailWrites++;
-    if(name==="consume_login_attempt")return res.end(JSON.stringify(!limited));
-    if(["preview_tyt_import","import_tyt_exam"].includes(name)) {
-      const args=name==="import_tyt_exam"?[JSON.stringify(body.payload),body.admin_session_hash]:[JSON.stringify(body.payload)];
-      return res.end(JSON.stringify((await db.query(`select public.${name}($1::jsonb${args.length===2?",$2":""}) result`,args)).rows[0].result));
-    }
-    assert.ok(["exams","viewer_pins","app_sessions"].includes(name));
-    const params=[],filters=[];
-    for(const [column,filter]of url.searchParams) {
-      if(["select","order","limit"].includes(column))continue;
-      if(column==="exam_subject_results.subject_id") { assert.equal(filter,"in.(tyt_turkish,tyt_social,tyt_math,tyt_science)");continue; }
-      if(column==="exam_subject_results.or") { assert.equal(filter,"(result_scope.eq.aggregate,subject_id.eq.tyt_turkish)");continue; }
-      if(column==="exam_rankings.scope") { assert.equal(filter,"eq.general");continue; }
-      assert.match(column,/^[a-z_]+$/);const op=filter.slice(0,3);assert.ok(["eq.","gt."].includes(op));
-      params.push(filter.slice(3));filters.push(`t.${column}${op==="eq."?"=":">"}$${params.length}`);
-    }
-    const where=filters.length?` where ${filters.join(" and ")}`:"";
-    let rows;
-    if(req.method==="GET") {
-      if(name==="exams" && url.searchParams.has("id") && req.method==="GET") {
-        assert.equal(url.searchParams.get("exam_type"),"eq.TYT");
-        assert.equal(url.searchParams.get("limit"),"1");
-        assert.equal(url.searchParams.get("select"),"id,name,exam_date,institution_name,class_label,score,total_questions,total_correct,total_wrong,total_blank,total_net,average_net,exam_subject_results(subject_id,result_scope,question_count,correct_count,wrong_count,blank_count,net,average_net,subject:subjects(id,name,parent_id,display_order)),exam_rankings(scope,rank,participant_count),exam_questions(id,subject_id,question_number,correct_answer,selected_answer,solution_url,topic:topics!exam_questions_topic_id_fkey(name,needs_review))");
-        if(failDetail) return res.writeHead(503).end("{}");
-        rows=await db.query(`select (to_jsonb(t)-'source_pdf_path'-'created_at'-'report_generated_at'-'exam_type') || jsonb_build_object(
-          'exam_subject_results',coalesce((select jsonb_agg((to_jsonb(r)-'exam_id') || jsonb_build_object('subject',jsonb_build_object('id',s.id,'name',s.name,'parent_id',s.parent_id,'display_order',s.display_order))) from public.exam_subject_results r join public.subjects s on s.id=r.subject_id where r.exam_id=t.id),'[]'::jsonb),
-          'exam_rankings',coalesce((select jsonb_agg(to_jsonb(r)-'exam_id') from public.exam_rankings r where r.exam_id=t.id),'[]'::jsonb),
-          'exam_questions',coalesce((select jsonb_agg((to_jsonb(q)-'exam_id'-'topic_id') || jsonb_build_object('topic',jsonb_build_object('name',topic.name,'needs_review',topic.needs_review))) from public.exam_questions q join public.topics topic on topic.id=q.topic_id where q.exam_id=t.id),'[]'::jsonb)
-        ) as row from public.exams t${where} limit 1`,params);
-      } else if(name==="exams") {
-        assert.equal(url.searchParams.get("select"),"id,name,exam_date,score,average_net,exam_subject_results(subject_id,result_scope,correct_count,wrong_count,average_net),exam_rankings(scope,rank,participant_count)");
-        assert.equal(url.searchParams.get("exam_rankings.scope"),"eq.general");
-        rows=await db.query(`select jsonb_build_object('id',t.id,'name',t.name,'exam_date',t.exam_date,'score',t.score,'average_net',t.average_net,
-          'exam_subject_results',coalesce((select jsonb_agg(jsonb_build_object('subject_id',r.subject_id,'result_scope',r.result_scope,'correct_count',r.correct_count,'wrong_count',r.wrong_count,'average_net',r.average_net)) from public.exam_subject_results r where r.exam_id=t.id and r.subject_id in ('tyt_turkish','tyt_social','tyt_math','tyt_science') and (r.result_scope='aggregate' or r.subject_id='tyt_turkish')),'[]'::jsonb),
-          'exam_rankings',coalesce((select jsonb_agg(jsonb_build_object('scope',r.scope,'rank',r.rank,'participant_count',r.participant_count)) from public.exam_rankings r where r.exam_id=t.id and r.scope='general'),'[]'::jsonb)) as row from public.exams t${where} order by exam_date,id`,params);
-      } else rows=await db.query(`select to_jsonb(t) as row from public.${name} t${where}`,params);
-    }else if(req.method==="POST") {
-      const cols=Object.keys(body);for(const c of cols)assert.match(c,/^[a-z_]+$/);
-      rows=await db.query(`insert into public.${name}(${cols.join(",")}) select ${cols.map(c=>`r.${c}`).join(",")} from jsonb_populate_record(null::public.${name},$1::jsonb) r returning to_jsonb(${name}.*) as row`,[JSON.stringify(body)]);
-    }else if(req.method==="PATCH") {
-      const cols=Object.keys(body);for(const c of cols)assert.match(c,/^[a-z_]+$/);
-      const sets=cols.map(c=>{params.push(body[c]);return `${c}=$${params.length}`});
-      rows=await db.query(`update public.${name} t set ${sets.join(",")}${where} returning to_jsonb(t) as row`,params);
-    }else{
-      assert.equal(req.method,"DELETE");rows=await db.query(`delete from public.${name} t${where} returning to_jsonb(t) as row`,params);
-    }
-    res.end(JSON.stringify(rows.rows.map(r=>r.row)));
-  }catch{res.writeHead(400).end(JSON.stringify({error:"isolated database rejected request"}));}
-});
-api.listen(0,"127.0.0.1");await once(api,"listening");
+const isolated = await createIsolatedAdapter();
+const { db, key, reads, state } = isolated;
 const reservation=createServer();reservation.listen(0,"127.0.0.1");await once(reservation,"listening");const port=reservation.address().port;await new Promise(r=>reservation.close(r));
 const origin=`http://localhost:${port}`;
-const child=spawn(process.execPath,["node_modules/next/dist/bin/next","start","-p",String(port)],{env:{...process.env,VERCEL:"",SUPABASE_URL:`http://127.0.0.1:${api.address().port}`,SUPABASE_SERVICE_ROLE_KEY:key,ADMIN_USER_ID:adminId,SESSION_SECRET:"isolated-integration-test-secret-at-least-32-chars"},stdio:["ignore","pipe","pipe"],windowsHide:true});
+const child=spawn(process.execPath,["node_modules/next/dist/bin/next","start","-p",String(port)],{env:{...process.env,...isolated.env},stdio:["ignore","pipe","pipe"],windowsHide:true});
 let logs="";child.stdout.on("data",c=>{logs+=c});child.stderr.on("data",c=>{logs+=c});
 const get=(path,cookie="")=>fetch(origin+path,{headers:{cookie},redirect:"manual"});
 const post=(path,data,cookie="")=>fetch(origin+path,{method:"POST",body:data,headers:{cookie,Origin:origin},redirect:"manual"});
@@ -153,7 +84,7 @@ try{
   const dashboard=await(await get("/yks27/tyt/dashboard",viewer)).text();
   assert.match(dashboard,/YKS26 TYT/);assert.match(dashboard,/Puan farkı/);
   assert.ok(dashboard.includes(new Intl.NumberFormat("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2,signDisplay:"exceptZero"}).format(expected.exam.score-310.78679)),"Dashboard compares the stored exam score with TYT, excluding placement points");
-  const writesBefore=detailWrites;
+  const writesBefore=state.detailWrites;
   for(const cookie of [admin,viewer]) {
     reads.clear();
     const response=await get(detailPath,cookie);assert.equal(response.status,200);
@@ -193,14 +124,14 @@ try{
       const missing=await get(`/yks27/tyt/${id}`,cookie);assert.ok([200,404].includes(missing.status));const notFoundHtml=await missing.text();assert.match(notFoundHtml,/TYT denemesi bulunamadı/);assert.match(notFoundHtml,/noindex/);assert.doesNotMatch(notFoundHtml,/data-question=/);
     }
   }
-  assert.equal(detailWrites,writesBefore,"Detail viewing never writes exam data");
+  assert.equal(state.detailWrites,writesBefore,"Detail viewing never writes exam data");
   const aytId=randomUUID();
   await db.query("insert into public.exams(id,exam_type,name,exam_date,total_questions,total_correct,total_wrong,total_blank,total_net) values($1,'AYT','AYT sentinel','2026-10-01',1,1,0,0,1)",[aytId]);
   const aytReport=await get(`/yks27/tyt/${aytId}`,viewer);assert.ok([200,404].includes(aytReport.status));assert.match(await aytReport.text(),/TYT denemesi bulunamadı/);
   await db.query("delete from public.exams where id=$1",[aytId]);
   // A streamed shell may already have status 200; the segment's Client Component
   // boundary renders recovery UI after hydration. No report data may be emitted.
-  failDetail=true;const failed=await get(detailPath,viewer);assert.ok([200,500].includes(failed.status));const failedHtml=await failed.text();assert.doesNotMatch(failedHtml,/data-question=/);assert.match(failedHtml,/digest/);failDetail=false;
+  state.failDetail=true;const failed=await get(detailPath,viewer);assert.ok([200,500].includes(failed.status));const failedHtml=await failed.text();assert.doesNotMatch(failedHtml,/data-question=/);assert.match(failedHtml,/digest/);state.failDetail=false;
   const cancelledFile="5ade3e51cd986a20854fff3770ec091034061db5.pdf";
   assert.match(actionResult(await(await upload(cancelledFile,admin,"confirm",cancelledPreview.receipt)).text()).success,/120 soru/);
   const cancelledRow=(await db.query("select id from public.exams where id<>$1",[row.id])).rows[0];
@@ -220,7 +151,7 @@ try{
   }
   if(process.env.YKS_PLAYWRIGHT_MODULE) {
     const { testDetailBrowser }=await import("./test-detail-browser.mjs");
-    await testDetailBrowser({origin,cookie:viewer,detailPath,cancelledPath:`/yks27/tyt/${cancelledRow.id}`,expected,setFailure:value=>{failDetail=value;}});
+    await testDetailBrowser({origin,cookie:viewer,detailPath,cancelledPath:`/yks27/tyt/${cancelledRow.id}`,expected,setFailure:value=>{state.failDetail=value;}});
   }
   await db.query("delete from public.exams where id=$1",[cancelledRow.id]);
   const remove=form(html,`value="${row.id}"`);assert.equal((await post("/yks27/admin",remove,viewer)).headers.get("location"),"/yks27/tyt");assert.equal(await examCount(),1);assert.equal((await post("/yks27/admin",remove)).headers.get("location"),loginTarget("/yks27/admin"));
@@ -233,8 +164,8 @@ try{
   await db.exec("update public.viewer_pins set expires_at=now()+interval '1 hour'");
   const pinRow=(await db.query("select id from public.viewer_pins limit 1")).rows[0];await post("/yks27/admin",form(html,`value="${pinRow.id}"`),admin);assert.equal(await redirectOf(await get("/yks27/tyt",viewer)),loginTarget("/yks27/tyt"));
   assert.equal(await redirectOf(await get(detailPath,viewer)),loginTarget(detailPath));
-  limited=true;assert.match(await(await post("/yks27/login",credentials)).text(),/Çok fazla/);limited=false;
+  state.limited=true;assert.match(await(await post("/yks27/login",credentials)).text(),/Çok fazla/);state.limited=false;
   await post("/yks27/admin",form(html,"Çıkış yap"),admin);assert.equal(await redirectOf(await get("/yks27/admin",admin)),loginTarget("/yks27/admin"));
   async function inspect(dir){for(const e of await readdir(dir,{withFileTypes:true})){const path=join(dir,e.name);if(e.isDirectory())await inspect(path);else if(path.endsWith(".js"))assert.ok(!(await readFile(path,"utf8")).includes(key),"Server credential in client bundle");}}await inspect(".next/static");
   console.log("PASS: TYT detail totals/13 results/4 rankings/120 questions/topics, admin/viewer access, invalid/unknown/AYT 404s, database errors, read-only retrieval, production PDF preview/confirmation, tamper/CSRF denial, duplicates, cancelled reports, listings/charts, topic warnings, cascading deletion, PIN revocation, rate limit, logout, client secret check.");
-}catch(error){console.error(logs);throw error;}finally{child.kill();api.closeAllConnections();await new Promise(r=>api.close(r));await db.close();}
+}catch(error){console.error(logs);throw error;}finally{child.kill();await isolated.close();}

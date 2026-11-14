@@ -1,0 +1,617 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-14T22:09:45.070Z",
+  "title": "Design System: YKS27 Study Workspace",
+  "extensions": {
+    "colorMeta": {
+      "accent": {
+        "role": "primary",
+        "displayName": "Study Blue",
+        "tonalRamp": [
+          "oklch(15% 0.0458 258.65)",
+          "oklch(25% 0.0764 258.65)",
+          "oklch(35% 0.1069 258.65)",
+          "oklch(45% 0.1374 258.65)",
+          "oklch(55% 0.1374 258.65)",
+          "oklch(65% 0.1374 258.65)",
+          "oklch(80% 0.0785 258.65)",
+          "oklch(95% 0.0196 258.65)"
+        ]
+      },
+      "accent-soft": {
+        "role": "primary",
+        "displayName": "Soft Blue",
+        "tonalRamp": [
+          "oklch(15% 0.0065 260.17)",
+          "oklch(25% 0.0109 260.17)",
+          "oklch(35% 0.0152 260.17)",
+          "oklch(45% 0.0196 260.17)",
+          "oklch(55% 0.0196 260.17)",
+          "oklch(65% 0.0196 260.17)",
+          "oklch(80% 0.0112 260.17)",
+          "oklch(95% 0.0028 260.17)"
+        ]
+      },
+      "chart-primary": {
+        "role": "primary",
+        "displayName": "Chart Blue",
+        "tonalRamp": [
+          "oklch(15% 0.0717 262.88)",
+          "oklch(25% 0.1196 262.88)",
+          "oklch(35% 0.1674 262.88)",
+          "oklch(45% 0.2152 262.88)",
+          "oklch(55% 0.2152 262.88)",
+          "oklch(65% 0.2152 262.88)",
+          "oklch(80% 0.1230 262.88)",
+          "oklch(95% 0.0307 262.88)"
+        ]
+      },
+      "chart-secondary": {
+        "role": "secondary",
+        "displayName": "Correct Teal",
+        "tonalRamp": [
+          "oklch(15% 0.0287 186.39)",
+          "oklch(25% 0.0478 186.39)",
+          "oklch(35% 0.0669 186.39)",
+          "oklch(45% 0.0861 186.39)",
+          "oklch(55% 0.0861 186.39)",
+          "oklch(65% 0.0861 186.39)",
+          "oklch(80% 0.0492 186.39)",
+          "oklch(95% 0.0123 186.39)"
+        ]
+      },
+      "chart-tertiary": {
+        "role": "tertiary",
+        "displayName": "Incorrect Amber",
+        "tonalRamp": [
+          "oklch(15% 0.0485 49.00)",
+          "oklch(25% 0.0808 49.00)",
+          "oklch(35% 0.1132 49.00)",
+          "oklch(45% 0.1455 49.00)",
+          "oklch(55% 0.1455 49.00)",
+          "oklch(65% 0.1455 49.00)",
+          "oklch(80% 0.0831 49.00)",
+          "oklch(95% 0.0208 49.00)"
+        ]
+      },
+      "chart-quaternary": {
+        "role": "tertiary",
+        "displayName": "Comparison Violet",
+        "tonalRamp": [
+          "oklch(15% 0.0822 293.01)",
+          "oklch(25% 0.1370 293.01)",
+          "oklch(35% 0.1918 293.01)",
+          "oklch(45% 0.2466 293.01)",
+          "oklch(55% 0.2466 293.01)",
+          "oklch(65% 0.2466 293.01)",
+          "oklch(80% 0.1409 293.01)",
+          "oklch(95% 0.0352 293.01)"
+        ]
+      },
+      "background": {
+        "role": "neutral",
+        "displayName": "Warm Ground",
+        "tonalRamp": [
+          "oklch(15% 0.0014 91.45)",
+          "oklch(25% 0.0023 91.45)",
+          "oklch(35% 0.0032 91.45)",
+          "oklch(45% 0.0041 91.45)",
+          "oklch(55% 0.0041 91.45)",
+          "oklch(65% 0.0041 91.45)",
+          "oklch(80% 0.0024 91.45)",
+          "oklch(95% 0.0006 91.45)"
+        ]
+      },
+      "foreground": {
+        "role": "neutral",
+        "displayName": "Reading Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0012 106.59)",
+          "oklch(25% 0.0019 106.59)",
+          "oklch(35% 0.0027 106.59)",
+          "oklch(45% 0.0035 106.59)",
+          "oklch(55% 0.0035 106.59)",
+          "oklch(65% 0.0035 106.59)",
+          "oklch(80% 0.0020 106.59)",
+          "oklch(95% 0.0005 106.59)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Paper Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0014 91.45)",
+          "oklch(25% 0.0023 91.45)",
+          "oklch(35% 0.0032 91.45)",
+          "oklch(45% 0.0041 91.45)",
+          "oklch(55% 0.0041 91.45)",
+          "oklch(65% 0.0041 91.45)",
+          "oklch(80% 0.0023 91.45)",
+          "oklch(95% 0.0006 91.45)"
+        ]
+      },
+      "surface-muted": {
+        "role": "neutral",
+        "displayName": "Muted Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0023 88.64)",
+          "oklch(25% 0.0039 88.64)",
+          "oklch(35% 0.0055 88.64)",
+          "oklch(45% 0.0070 88.64)",
+          "oklch(55% 0.0070 88.64)",
+          "oklch(65% 0.0070 88.64)",
+          "oklch(80% 0.0040 88.64)",
+          "oklch(95% 0.0010 88.64)"
+        ]
+      },
+      "surface-emphasis": {
+        "role": "neutral",
+        "displayName": "Emphasis Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0024 88.65)",
+          "oklch(25% 0.0039 88.65)",
+          "oklch(35% 0.0055 88.65)",
+          "oklch(45% 0.0071 88.65)",
+          "oklch(55% 0.0071 88.65)",
+          "oklch(65% 0.0071 88.65)",
+          "oklch(80% 0.0040 88.65)",
+          "oklch(95% 0.0010 88.65)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0027 88.69)",
+          "oklch(25% 0.0045 88.69)",
+          "oklch(35% 0.0064 88.69)",
+          "oklch(45% 0.0082 88.69)",
+          "oklch(55% 0.0082 88.69)",
+          "oklch(65% 0.0082 88.69)",
+          "oklch(80% 0.0047 88.69)",
+          "oklch(95% 0.0012 88.69)"
+        ]
+      },
+      "subtle": {
+        "role": "neutral",
+        "displayName": "Subtle Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0032 91.56)",
+          "oklch(25% 0.0053 91.56)",
+          "oklch(35% 0.0074 91.56)",
+          "oklch(45% 0.0095 91.56)",
+          "oklch(55% 0.0095 91.56)",
+          "oklch(65% 0.0095 91.56)",
+          "oklch(80% 0.0054 91.56)",
+          "oklch(95% 0.0014 91.56)"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "tonalRamp": [
+          "oklch(15% 0.0028 91.49)",
+          "oklch(25% 0.0047 91.49)",
+          "oklch(35% 0.0066 91.49)",
+          "oklch(45% 0.0085 91.49)",
+          "oklch(55% 0.0085 91.49)",
+          "oklch(65% 0.0085 91.49)",
+          "oklch(80% 0.0048 91.49)",
+          "oklch(95% 0.0012 91.49)"
+        ]
+      },
+      "accent-dark": {
+        "role": "primary",
+        "displayName": "Study Blue — Dark",
+        "tonalRamp": [
+          "oklch(15% 0.0259 259.44)",
+          "oklch(25% 0.0432 259.44)",
+          "oklch(35% 0.0604 259.44)",
+          "oklch(45% 0.0777 259.44)",
+          "oklch(55% 0.0777 259.44)",
+          "oklch(65% 0.0777 259.44)",
+          "oklch(80% 0.0444 259.44)",
+          "oklch(95% 0.0111 259.44)"
+        ]
+      },
+      "accent-soft-dark": {
+        "role": "primary",
+        "displayName": "Soft Blue — Dark",
+        "tonalRamp": [
+          "oklch(15% 0.0131 260.43)",
+          "oklch(25% 0.0219 260.43)",
+          "oklch(35% 0.0306 260.43)",
+          "oklch(45% 0.0394 260.43)",
+          "oklch(55% 0.0394 260.43)",
+          "oklch(65% 0.0394 260.43)",
+          "oklch(80% 0.0225 260.43)",
+          "oklch(95% 0.0056 260.43)"
+        ]
+      },
+      "chart-primary-dark": {
+        "role": "primary",
+        "displayName": "Chart Blue — Dark",
+        "tonalRamp": [
+          "oklch(15% 0.0478 254.62)",
+          "oklch(25% 0.0797 254.62)",
+          "oklch(35% 0.1115 254.62)",
+          "oklch(45% 0.1434 254.62)",
+          "oklch(55% 0.1434 254.62)",
+          "oklch(65% 0.1434 254.62)",
+          "oklch(80% 0.0819 254.62)",
+          "oklch(95% 0.0205 254.62)"
+        ]
+      },
+      "chart-secondary-dark": {
+        "role": "secondary",
+        "displayName": "Correct Teal — Dark",
+        "tonalRamp": [
+          "oklch(15% 0.0442 181.91)",
+          "oklch(25% 0.0736 181.91)",
+          "oklch(35% 0.1031 181.91)",
+          "oklch(45% 0.1325 181.91)",
+          "oklch(55% 0.1325 181.91)",
+          "oklch(65% 0.1325 181.91)",
+          "oklch(80% 0.0757 181.91)",
+          "oklch(95% 0.0189 181.91)"
+        ]
+      },
+      "chart-tertiary-dark": {
+        "role": "tertiary",
+        "displayName": "Incorrect Amber — Dark",
+        "tonalRamp": [
+          "oklch(15% 0.0548 84.43)",
+          "oklch(25% 0.0913 84.43)",
+          "oklch(35% 0.1279 84.43)",
+          "oklch(45% 0.1644 84.43)",
+          "oklch(55% 0.1644 84.43)",
+          "oklch(65% 0.1644 84.43)",
+          "oklch(80% 0.0940 84.43)",
+          "oklch(95% 0.0235 84.43)"
+        ]
+      },
+      "chart-quaternary-dark": {
+        "role": "tertiary",
+        "displayName": "Comparison Violet — Dark",
+        "tonalRamp": [
+          "oklch(15% 0.0338 293.57)",
+          "oklch(25% 0.0563 293.57)",
+          "oklch(35% 0.0788 293.57)",
+          "oklch(45% 0.1013 293.57)",
+          "oklch(55% 0.1013 293.57)",
+          "oklch(65% 0.1013 293.57)",
+          "oklch(80% 0.0579 293.57)",
+          "oklch(95% 0.0145 293.57)"
+        ]
+      },
+      "background-dark": {
+        "role": "neutral",
+        "displayName": "Warm Ground — Dark",
+        "tonalRamp": [
+          "oklch(15% 0.0000 89.88)",
+          "oklch(25% 0.0000 89.88)",
+          "oklch(35% 0.0000 89.88)",
+          "oklch(45% 0.0000 89.88)",
+          "oklch(55% 0.0000 89.88)",
+          "oklch(65% 0.0000 89.88)",
+          "oklch(80% 0.0000 89.88)",
+          "oklch(95% 0.0000 89.88)"
+        ]
+      },
+      "foreground-dark": {
+        "role": "neutral",
+        "displayName": "Reading Ink — Dark",
+        "tonalRamp": [
+          "oklch(15% 0.0023 97.36)",
+          "oklch(25% 0.0038 97.36)",
+          "oklch(35% 0.0053 97.36)",
+          "oklch(45% 0.0068 97.36)",
+          "oklch(55% 0.0068 97.36)",
+          "oklch(65% 0.0068 97.36)",
+          "oklch(80% 0.0039 97.36)",
+          "oklch(95% 0.0010 97.36)"
+        ]
+      },
+      "surface-dark": {
+        "role": "neutral",
+        "displayName": "Paper Surface — Dark",
+        "tonalRamp": [
+          "oklch(15% 0.0000 89.88)",
+          "oklch(25% 0.0000 89.88)",
+          "oklch(35% 0.0000 89.88)",
+          "oklch(45% 0.0000 89.88)",
+          "oklch(55% 0.0000 89.88)",
+          "oklch(65% 0.0000 89.88)",
+          "oklch(80% 0.0000 89.88)",
+          "oklch(95% 0.0000 89.88)"
+        ]
+      },
+      "surface-muted-dark": {
+        "role": "neutral",
+        "displayName": "Muted Surface — Dark",
+        "tonalRamp": [
+          "oklch(15% 0.0006 106.51)",
+          "oklch(25% 0.0010 106.51)",
+          "oklch(35% 0.0014 106.51)",
+          "oklch(45% 0.0018 106.51)",
+          "oklch(55% 0.0018 106.51)",
+          "oklch(65% 0.0018 106.51)",
+          "oklch(80% 0.0010 106.51)",
+          "oklch(95% 0.0003 106.51)"
+        ]
+      },
+      "surface-emphasis-dark": {
+        "role": "neutral",
+        "displayName": "Emphasis Surface — Dark",
+        "tonalRamp": [
+          "oklch(15% 0.0006 106.50)",
+          "oklch(25% 0.0010 106.50)",
+          "oklch(35% 0.0014 106.50)",
+          "oklch(45% 0.0017 106.50)",
+          "oklch(55% 0.0017 106.50)",
+          "oklch(65% 0.0017 106.50)",
+          "oklch(80% 0.0010 106.50)",
+          "oklch(95% 0.0002 106.50)"
+        ]
+      },
+      "muted-dark": {
+        "role": "neutral",
+        "displayName": "Muted Ink — Dark",
+        "tonalRamp": [
+          "oklch(15% 0.0029 91.51)",
+          "oklch(25% 0.0049 91.51)",
+          "oklch(35% 0.0068 91.51)",
+          "oklch(45% 0.0087 91.51)",
+          "oklch(55% 0.0087 91.51)",
+          "oklch(65% 0.0087 91.51)",
+          "oklch(80% 0.0050 91.51)",
+          "oklch(95% 0.0012 91.51)"
+        ]
+      },
+      "subtle-dark": {
+        "role": "neutral",
+        "displayName": "Subtle Ink — Dark",
+        "tonalRamp": [
+          "oklch(15% 0.0030 91.52)",
+          "oklch(25% 0.0050 91.52)",
+          "oklch(35% 0.0070 91.52)",
+          "oklch(45% 0.0089 91.52)",
+          "oklch(55% 0.0089 91.52)",
+          "oklch(65% 0.0089 91.52)",
+          "oklch(80% 0.0051 91.52)",
+          "oklch(95% 0.0013 91.52)"
+        ]
+      },
+      "border-dark": {
+        "role": "neutral",
+        "displayName": "Hairline — Dark",
+        "tonalRamp": [
+          "oklch(15% 0.0011 106.56)",
+          "oklch(25% 0.0019 106.56)",
+          "oklch(35% 0.0026 106.56)",
+          "oklch(45% 0.0033 106.56)",
+          "oklch(55% 0.0033 106.56)",
+          "oklch(65% 0.0033 106.56)",
+          "oklch(80% 0.0019 106.56)",
+          "oklch(95% 0.0005 106.56)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "headline": {
+        "displayName": "Page Headline",
+        "purpose": "Page title; narrow variant applies through 600px."
+      },
+      "headline-narrow": {
+        "displayName": "Narrow Headline",
+        "purpose": "Page title on narrow screens."
+      },
+      "title": {
+        "displayName": "Subject Title",
+        "purpose": "Semibold subject-band headings."
+      },
+      "body": {
+        "displayName": "Workspace Body",
+        "purpose": "Default YKS text; table cells use explicit 20px line height."
+      },
+      "label": {
+        "displayName": "Supporting Label",
+        "purpose": "Summary labels, notes and compact metrics."
+      },
+      "table-label": {
+        "displayName": "Table Label",
+        "purpose": "Medium-weight column headers."
+      },
+      "metric": {
+        "displayName": "Summary Metric",
+        "purpose": "Ordinary divided-strip totals."
+      },
+      "metric-lead": {
+        "displayName": "Lead Metric",
+        "purpose": "The leading summary total."
+      }
+    },
+    "shadows": [
+      {
+        "name": "sheet-overlay",
+        "value": "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+        "purpose": "Existing large soft shadow for mobile navigation overlay only."
+      },
+      {
+        "name": "selected-segment",
+        "value": "inset 0 0 0 1px var(--border)",
+        "purpose": "Selected range segment; a border treatment rather than elevation."
+      }
+    ],
+    "motion": [
+      {
+        "name": "control-transition",
+        "value": "150ms cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "Existing default component state transition; disabled under reduced motion."
+      },
+      {
+        "name": "row-chevron",
+        "value": "transform 150ms ease-out",
+        "purpose": "Rotate the group-expansion chevron."
+      },
+      {
+        "name": "sheet-transition",
+        "value": "200ms cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "Mobile sheet transition; overlay fade uses 100ms."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "narrow-page",
+        "value": "600px"
+      },
+      {
+        "name": "question-cards-and-touch-controls",
+        "value": "767px"
+      },
+      {
+        "name": "mobile-navigation",
+        "value": "900px"
+      },
+      {
+        "name": "compact-navigation",
+        "value": "1150px"
+      },
+      {
+        "name": "detail-columns",
+        "value": "1200px"
+      }
+    ],
+    "tonalRampPolicy": "Generated OKLCH ramps visualize each existing hue; they are derived metadata, not additional shipping palette tokens. Dark-suffixed metadata describes the prefers-color-scheme counterpart. Component previews inherit source custom properties; literal fallbacks are for a neutral host without project variables."
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The main action uses the existing accent and background inks.",
+      "html": "<button class=\"ds-primary\">Son denemeyi incele</button>",
+      "css": ".ds-primary{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 14px;border:1px solid transparent;border-radius:10px;font-weight:500;font-family:var(--font-geist-sans,Geist),Arial,sans-serif;font-size:14px;line-height:1.5;cursor:pointer;transition:background-color 150ms cubic-bezier(.4,0,.2,1),color 150ms cubic-bezier(.4,0,.2,1),transform 150ms cubic-bezier(.4,0,.2,1);background:var(--accent,#2458a6);color:var(--background,#f3f2ef)}.ds-primary:hover{background:color-mix(in oklab,var(--accent,#2458a6) 80%,transparent)}.ds-primary:focus-visible{outline:2px solid var(--accent,#2458a6);outline-offset:3px;box-shadow:0 0 0 3px color-mix(in oklab,var(--accent,#2458a6) 50%,transparent)}.ds-primary:active{transform:translateY(1px)}.ds-primary:disabled{opacity:.5;pointer-events:none}@media(pointer:coarse),(max-width:767px){.ds-primary{min-height:44px;min-width:44px}}@media(prefers-reduced-motion:reduce){.ds-primary{transition:none}}"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Quiet bordered action; dark mode follows the component's input-tinted variant.",
+      "html": "<button class=\"ds-outline\">Filtrele</button>",
+      "css": ".ds-outline{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 14px;border:1px solid transparent;border-radius:10px;font-weight:500;font-family:var(--font-geist-sans,Geist),Arial,sans-serif;font-size:14px;line-height:1.5;cursor:pointer;transition:background-color 150ms cubic-bezier(.4,0,.2,1),color 150ms cubic-bezier(.4,0,.2,1),transform 150ms cubic-bezier(.4,0,.2,1);border-color:var(--border,#d6d4ce);background:var(--background,#f3f2ef);color:var(--foreground,#333331)}.ds-outline:hover{background:var(--surface-muted,#eae8e3)}.ds-outline:focus-visible{outline:2px solid var(--accent,#2458a6);outline-offset:3px;box-shadow:0 0 0 3px color-mix(in oklab,var(--accent,#2458a6) 50%,transparent)}.ds-outline:active{transform:translateY(1px)}@media(prefers-color-scheme:dark){.ds-outline{background:color-mix(in oklab,var(--border,#434341) 30%,transparent)}.ds-outline:hover{background:color-mix(in oklab,var(--border,#434341) 50%,transparent)}}@media(pointer:coarse),(max-width:767px){.ds-outline{min-height:44px;min-width:44px}}@media(prefers-reduced-motion:reduce){.ds-outline{transition:none}}"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "A low-emphasis action such as account logout.",
+      "html": "<button class=\"ds-ghost\">Çıkış yap</button>",
+      "css": ".ds-ghost{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 14px;border:1px solid transparent;border-radius:10px;font-weight:500;font-family:var(--font-geist-sans,Geist),Arial,sans-serif;font-size:14px;line-height:1.5;cursor:pointer;transition:background-color 150ms cubic-bezier(.4,0,.2,1),color 150ms cubic-bezier(.4,0,.2,1),transform 150ms cubic-bezier(.4,0,.2,1);background:transparent;color:var(--foreground,#333331)}.ds-ghost:hover{background:var(--surface-muted,#eae8e3)}.ds-ghost:focus-visible{outline:2px solid var(--accent,#2458a6);outline-offset:3px;box-shadow:0 0 0 3px color-mix(in oklab,var(--accent,#2458a6) 50%,transparent)}.ds-ghost:active{transform:translateY(1px)}@media(prefers-color-scheme:dark){.ds-ghost:hover{background:color-mix(in oklab,var(--surface-muted,#2b2b2a) 50%,transparent)}}@media(pointer:coarse),(max-width:767px){.ds-ghost{min-height:44px;min-width:44px}}@media(prefers-reduced-motion:reduce){.ds-ghost{transition:none}}"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "A labelled, surface-filled search field with explicit focus and placeholder treatment.",
+      "html": "<label class=\"ds-field\">Konu ara<input class=\"ds-input\" type=\"search\" placeholder=\"Konu adı\" /></label>",
+      "css": ".ds-field{display:grid;gap:8px;color:var(--foreground,#333331);font-weight:500;font-family:var(--font-geist-sans,Geist),Arial,sans-serif;font-size:14px;line-height:1.5;}.ds-input{width:100%;min-width:0;min-height:36px;padding:4.25px 10.625px;border:1px solid var(--border,#d6d4ce);border-radius:10px;background:var(--surface,#faf9f6);color:var(--foreground,#333331);font-family:var(--font-geist-sans,Geist),Arial,sans-serif;font-size:14px;line-height:1.5;caret-color:var(--accent,#2458a6);box-shadow:none;transition:border-color 150ms cubic-bezier(.4,0,.2,1)}.ds-input::placeholder{color:var(--muted,#66645f)}.ds-input:hover{border-color:var(--border,#d6d4ce)}.ds-input:focus-visible{outline:2px solid var(--accent,#2458a6);outline-offset:3px;border-color:var(--accent,#2458a6)}.ds-input:disabled{opacity:.5;pointer-events:none}@media(pointer:coarse),(max-width:767px){.ds-input{min-height:44px;font-size:16px}}@media(prefers-reduced-motion:reduce){.ds-input{transition:none}}"
+    },
+    {
+      "name": "Workspace Navigation",
+      "kind": "nav",
+      "refersTo": "navigation-current",
+      "description": "Muted links with a soft-blue current-page pill; the app places these vertically in a mobile sheet.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"YKS sayfaları\"><a href=\"#genel\">Genel bakış</a><a href=\"#konular\" aria-current=\"page\">Konu başarısı</a></nav>",
+      "css": ".ds-nav{display:flex;flex-wrap:wrap;align-items:center;gap:4px;font-family:var(--font-geist-sans,Geist),Arial,sans-serif;font-size:14px;line-height:1.5;}.ds-nav a{display:flex;align-items:center;padding:6px 12px;border-radius:999px;color:var(--muted,#66645f);font-weight:500;text-decoration:none;white-space:nowrap}.ds-nav a:hover{color:var(--foreground,#333331);background:var(--surface-muted,#eae8e3)}.ds-nav a[aria-current]{background:var(--accent-soft,#e2eaf7);color:var(--accent,#2458a6)}.ds-nav a:focus-visible{outline:2px solid var(--accent,#2458a6);outline-offset:3px;}@media(pointer:coarse),(max-width:767px){.ds-nav a{min-width:44px;min-height:44px}}"
+    },
+    {
+      "name": "Subject Jump Chip",
+      "kind": "chip",
+      "refersTo": "jump-chip",
+      "description": "A compact anchor for jumping to a subject record.",
+      "html": "<a class=\"ds-chip\" href=\"#ders-turkce\">Türkçe</a>",
+      "css": ".ds-chip{display:inline-flex;align-items:center;padding:6px 12px;border:1px solid var(--border,#d6d4ce);border-radius:999px;background:var(--surface,#faf9f6);color:var(--muted,#66645f);font-family:var(--font-geist-sans,Geist),Arial,sans-serif;font-size:12px;line-height:1.5;text-decoration:none}.ds-chip:hover{color:var(--accent,#2458a6);border-color:var(--accent,#2458a6)}.ds-chip:focus-visible{outline:2px solid var(--accent,#2458a6);outline-offset:3px;}@media(pointer:coarse),(max-width:767px){.ds-chip{min-height:44px;min-width:44px}}"
+    },
+    {
+      "name": "Subject Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "A flat bordered record with an accent-soft band and an actionable content area.",
+      "html": "<section class=\"ds-card\"><header class=\"ds-band\"><h2>Çalışma alanın</h2></header><div class=\"ds-card-body\"><a href=\"#konu-analizi\">Konu Başarı Analizi</a><p>Denemelerini birleştir; sonuçlarını konu bazında gör.</p></div></section>",
+      "css": ".ds-card{overflow:hidden;border:1px solid var(--border,#d6d4ce);border-radius:12px;background:var(--surface,#faf9f6);color:var(--foreground,#333331);box-shadow:none;font-family:var(--font-geist-sans,Geist),Arial,sans-serif;font-size:14px;line-height:1.5;}.ds-band{padding:13px 24px;border-bottom:1px solid var(--border,#d6d4ce);background:var(--accent-soft,#e2eaf7)}.ds-band h2{margin:0;font-size:16px;font-weight:600;line-height:1.5}.ds-card-body{padding:20px}.ds-card-body p{margin:8px 0 0;color:var(--muted,#66645f)}.ds-card-body a{color:var(--foreground,#333331);font-weight:500;text-underline-offset:4px;text-decoration:none}.ds-card-body a:hover{color:var(--accent,#2458a6);text-decoration:underline}.ds-card-body a:focus-visible{outline:2px solid var(--accent,#2458a6);outline-offset:3px;}@media(pointer:coarse),(max-width:767px){.ds-card-body a{display:inline-flex;align-items:center;min-height:44px;min-width:44px}}@media(max-width:600px){.ds-band{padding:12px}}"
+    },
+    {
+      "name": "Divided Summary Strip",
+      "kind": "custom",
+      "refersTo": "card",
+      "description": "One definition-list strip holds labelled totals rather than separate metric cards.",
+      "html": "<dl class=\"ds-summary\" aria-label=\"Seçilen aralığın özeti\"><div><dt>Soru sayısı</dt><dd>120</dd></div><div><dt>Doğru</dt><dd class=\"ds-correct\">80</dd></div><div><dt>Yanlış</dt><dd class=\"ds-incorrect\">20</dd></div></dl>",
+      "css": ".ds-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:0;border:1px solid var(--border,#d6d4ce);border-radius:12px;overflow:hidden;background:var(--surface,#faf9f6);color:var(--foreground,#333331);font-family:var(--font-geist-sans,Geist),Arial,sans-serif;font-size:14px;line-height:1.5;font-variant-numeric:tabular-nums}.ds-summary>div{padding:16px 24px;min-width:0}.ds-summary>div+div{border-left:1px solid var(--border,#d6d4ce)}.ds-summary dt{font-size:12px;color:var(--muted,#66645f)}.ds-summary dd{margin:4px 0 0;font-size:28px;line-height:36px;font-weight:600;letter-spacing:-.02em}.ds-summary .ds-correct{color:var(--chart-secondary,#0f766e)}.ds-summary .ds-incorrect{color:var(--chart-tertiary,#b45309)}@media(max-width:600px){.ds-summary>div{padding:12px}.ds-summary dd{font-size:clamp(20px,6.15vw,24px);white-space:nowrap}}"
+    },
+    {
+      "name": "Karne Rows",
+      "kind": "custom",
+      "refersTo": "card",
+      "description": "A real table with indented child topics and opaque surface-backed outcome cells; preview numbers illustrate the pattern.",
+      "html": "<table class=\"ds-karne\"><caption>Türkçe · Konu başarısı</caption><thead><tr><th scope=\"col\">Konu Adı</th><th scope=\"col\" title=\"Soru sayısı\">SS</th><th scope=\"col\" title=\"Doğru\">D</th><th scope=\"col\" title=\"Yanlış\">Y</th><th scope=\"col\" title=\"Boş\">B</th><th scope=\"col\">Baş. (%)</th></tr></thead><tbody><tr><th scope=\"row\"><button class=\"ds-row-toggle\" aria-expanded=\"true\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"m9 18 6-6-6-6\"/></svg>Yazım Kuralları</button></th><td>10</td><td class=\"ds-d\">6</td><td class=\"ds-y\">2</td><td>2</td><td>60</td></tr><tr class=\"ds-child\"><th scope=\"row\"><a href=\"#konu-detayi\">Birleşik Yazılan Kelimeler</a></th><td>5</td><td class=\"ds-d\">3</td><td class=\"ds-y\">1</td><td>1</td><td>60</td></tr></tbody></table>",
+      "css": ".ds-karne{width:100%;table-layout:fixed;border-collapse:collapse;background:var(--surface,#faf9f6);color:var(--foreground,#333331);font-family:var(--font-geist-sans,Geist),Arial,sans-serif;font-variant-numeric:tabular-nums}.ds-karne caption{text-align:left;padding:13px 24px;background:var(--accent-soft,#e2eaf7);font-size:16px;font-weight:600}.ds-karne :is(th,td){padding:9px 14px;border-bottom:1px solid var(--border,#d6d4ce);text-align:right;font-size:14px;line-height:20px;overflow-wrap:anywhere}.ds-karne tr>:not(:first-child){width:6.2%}.ds-karne tr>:last-child{width:20%}.ds-karne th:first-child{padding-left:24px;text-align:left}.ds-karne thead th{font-size:12px;font-weight:500;color:var(--muted,#66645f)}.ds-karne tbody th{font-weight:400}.ds-karne tbody tr:not(.ds-child):hover{background:color-mix(in oklab,var(--surface-muted,#eae8e3) 50%,transparent)}.ds-karne .ds-child{background:var(--surface-muted,#eae8e3)}.ds-karne .ds-child th{padding-left:56px}.ds-karne .ds-d{color:var(--chart-secondary,#0f766e);background:var(--surface,#faf9f6)}.ds-karne .ds-y{color:var(--chart-tertiary,#b45309);background:var(--surface,#faf9f6)}.ds-row-toggle{display:flex;align-items:center;gap:8px;width:100%;min-height:24px;border:0;padding:0;background:transparent;color:inherit;text-align:left;font:inherit;cursor:pointer}.ds-row-toggle svg{flex-shrink:0;color:var(--muted,#66645f);transform:rotate(90deg);transition:transform 150ms ease-out}.ds-row-toggle:hover{color:var(--foreground,#333331)}.ds-row-toggle:focus-visible,.ds-karne a:focus-visible{outline:2px solid var(--accent,#2458a6);outline-offset:3px;}.ds-karne a{color:inherit;text-decoration:none;text-underline-offset:4px}.ds-karne a:hover{color:var(--accent,#2458a6);text-decoration:underline}@media(max-width:600px){.ds-karne :is(th,td){padding:8px 4px;font-size:12px}.ds-karne th:first-child{padding-left:12px}.ds-karne tr>:not(:first-child){width:8.4%}.ds-karne tr>:last-child{width:20%}.ds-karne .ds-child th{padding-left:28px}.ds-row-toggle{min-height:44px;gap:4px}}@media(pointer:coarse),(max-width:767px){.ds-karne a{display:flex;align-items:center;min-height:44px;min-width:44px}}@media(prefers-reduced-motion:reduce){.ds-row-toggle svg{transition:none}}"
+    },
+    {
+      "name": "Details Switch",
+      "kind": "custom",
+      "description": "The visible switch is compact; its labelled action supplies a 44px hit area. Runtime URL behavior belongs to the app.",
+      "html": "<label class=\"ds-switch-field\"><input class=\"ds-switch-input\" type=\"checkbox\" role=\"switch\" /><span class=\"ds-switch-track\" aria-hidden=\"true\"></span><span>Ayrıntılar</span></label>",
+      "css": ".ds-switch-field{position:relative;display:inline-flex;align-items:center;gap:8px;min-height:44px;color:var(--foreground,#333331);font-family:var(--font-geist-sans,Geist),Arial,sans-serif;font-size:14px;line-height:1.5;cursor:pointer}.ds-switch-input{position:absolute;width:36px;height:44px;margin:0;opacity:0;cursor:pointer}.ds-switch-track{display:inline-flex;align-items:center;width:36px;height:20px;border:1px solid transparent;border-radius:999px;background:var(--border,#d6d4ce);transition:background-color 150ms cubic-bezier(.4,0,.2,1);pointer-events:none}.ds-switch-track::after{content:\"\";display:block;width:16px;height:16px;border-radius:999px;background:var(--background,#f3f2ef);transform:translateX(0);transition:transform 150ms cubic-bezier(.4,0,.2,1)}.ds-switch-input:checked+.ds-switch-track{background:var(--accent,#2458a6)}.ds-switch-input:checked+.ds-switch-track::after{transform:translateX(14px)}.ds-switch-field:hover .ds-switch-track{border-color:transparent}.ds-switch-input:focus-visible+.ds-switch-track{outline:2px solid var(--accent,#2458a6);outline-offset:3px;box-shadow:0 0 0 3px color-mix(in oklab,var(--accent,#2458a6) 50%,transparent)}@media(prefers-color-scheme:dark){.ds-switch-input:not(:checked)+.ds-switch-track{background:color-mix(in oklab,var(--border,#434341) 80%,transparent)}.ds-switch-input:not(:checked)+.ds-switch-track::after{background:var(--foreground,#deddd8)}}@media(prefers-reduced-motion:reduce){.ds-switch-track,.ds-switch-track::after{transition:none}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Birleştirilmiş Karne, made live",
+    "overview": "YKS27 translates the familiar printed dershane report into a calm, compact study workspace. Subject bands, aligned numbers and indented topic rows make performance easy to scan. The visual hierarchy supports a student deciding what to study next and a tutor or parent reading the same numbers without prior context.\n\nThis system applies to the private `/yks27` workspace and its shared UI. Login, admin and AYT inherit the shell and primitives; their content has not received the full student-page redesign. The public portfolio, pharmacy finder and Instagram tool keep their existing appearance. The radius and type rules below belong to the YKS scope, not to those public surfaces.",
+    "keyCharacteristics": [
+      "Warm neutral surfaces with the existing blue accent in both system themes.",
+      "Real tables, labelled tabular figures and restrained subject bands.",
+      "One divided summary strip before filters and detailed records.",
+      "In-place topic expansion and extra metrics disclosed on request.",
+      "Flat bordered cards, visible focus and generous touch actions."
+    ],
+    "rules": [
+      {
+        "name": "The Text-and-Surface Rule",
+        "body": "The original `--muted` is text ink. Use `--surface-muted` for muted backgrounds; never adopt the shadcn background meaning for this existing text token.",
+        "section": "colors"
+      },
+      {
+        "name": "The Outcome Pairing Rule",
+        "body": "Preserve the exact correct and incorrect inks. Numeric D/Y cells use opaque `--surface` backing, including child rows, totals and hover states; preserve the surrounding muted row treatment. Labels and headers carry meaning alongside color.",
+        "section": "colors"
+      },
+      {
+        "name": "The Aligned Figures Rule",
+        "body": "Keep numbers tabular and right-aligned in tables. Topic names remain left-aligned and may wrap; compactness must not turn labels into clipped text.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Records Rule",
+        "body": "Ordinary record cards remain bordered and shadowless; reserve overlay depth for the navigation sheet.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do scope this system to the YKS27 workspace and preserve the public portfolio, pharmacy and Instagram appearance.",
+      "Do use the existing light/dark semantic palette and follow the system color preference.",
+      "Do keep summaries together, subject records tabular, numbers labelled and child rows indented.",
+      "Do keep D/Y numeric cells on opaque surface backing in child, total and hover states.",
+      "Do provide visible keyboard focus, text status cues, reduced motion and at least 44px touch actions.",
+      "Do keep detailed metrics opt-in and preserve shareable URL state."
+    ],
+    "donts": [
+      "Don't use the legacy muted text token as a background.",
+      "Don't add new hues or recolor correct and incorrect outcomes.",
+      "Don't replace the karne's records with a grid of independent metric cards.",
+      "Don't depict missing observations as zero-percent failure.",
+      "Don't spread the YKS typography and radius overrides onto public pages.",
+      "Don't add ordinary card shadows or treat the navigation sheet's overlay depth as a card default."
+    ]
+  }
+}

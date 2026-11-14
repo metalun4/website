@@ -130,7 +130,12 @@ export function compareTopics(sort: TopicSort, left: { name: string; metrics: To
   return right.metrics.valid - left.metrics.valid || collator.compare(left.name, right.name);
 }
 
-export function topicQuery(params: { range?: string; subject?: string; q?: string; sort?: string; topic?: string; group?: string }) {
+// Accept legacy single IDs, comma-separated IDs, and repeated URL parameters.
+export function topicGroupIds(value: string | string[] | undefined) {
+  return [...new Set((Array.isArray(value) ? value : [value ?? ""]).flatMap(item => item.split(",")).filter(isUuid))];
+}
+
+export function topicQuery(params: { range?: string; subject?: string; q?: string; sort?: string; topic?: string; group?: string; view?: string }) {
   const search = new URLSearchParams();
   if (params.range && params.range !== "all") search.set("range", params.range);
   if (params.subject) search.set("subject", params.subject);
@@ -138,6 +143,7 @@ export function topicQuery(params: { range?: string; subject?: string; q?: strin
   if (params.sort && params.sort !== "performance") search.set("sort", params.sort);
   if (params.topic) search.set("topic", params.topic);
   if (params.group) search.set("group", params.group);
+  if (params.view === "detail") search.set("view", "detail");
   const query = search.toString();
   return query ? `?${query}` : "";
 }
