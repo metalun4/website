@@ -85,7 +85,10 @@ GEMINI.md
 CODEX.md
 COPILOT.md
 SKILL.md
+DESIGN.md
+PRODUCT.md
 skills-lock.json
+.impeccable/
 .agents/
 .agent/
 .codex/
