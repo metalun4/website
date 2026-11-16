@@ -8,7 +8,10 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/yks27/admin": ["./src/lib/exam-import/pdf-worker.generated.mjs", "./node_modules/pdfjs-dist/package.json", "./node_modules/pdfjs-dist/legacy/build/pdf.mjs", "./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"],
   },
-  experimental: { serverActions: { bodySizeLimit: "2300kb" } },
+  experimental: {
+    agentUpgrade: "security",
+    serverActions: { bodySizeLimit: "2300kb" },
+  },
 };
 
 export default nextConfig;
