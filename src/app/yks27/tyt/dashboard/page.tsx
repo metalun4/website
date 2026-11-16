@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { requireSession } from "@/lib/session";
 import { getExams } from "@/lib/exams";
+import { loadStudyAnalysis } from "@/lib/topic-study";
 import { queryValue, type Query } from "@/lib/yks-navigation";
 import { yks26Tyt, yks26TytNet } from "@/lib/yks26-tyt";
 import { LazyDetails } from "../../lazy-details";
 import { AdvancedAnalytics, type AnalyticsExam } from "../analytics";
 import Chart from "../chart";
 import { dateLabel, difference, calculateExam, movingAverage3, number, subjects, visibleSlice } from "../data";
+import { StudyDashboardSummary } from "./study-summary";
 
 export const metadata: Metadata = {
   title: "TYT Gelişim Paneli | YKS 2027",
@@ -76,6 +78,7 @@ export default async function TytDashboard({ searchParams }: { searchParams: Pro
   const latest = all.at(-1);
   const previous = all.at(-2);
   if (!latest) return <EmptyDashboard admin={current.role === "admin"} />;
+  const studyAnalysis = await loadStudyAnalysis(latest.id, false).catch(() => null);
   const exams = visibleSlice(all, range);
   // SMA-3 uses the full chronological history; the shared range filter only hides exams.
   const trend = visibleSlice(movingAverage3(all.map(exam => exam.net)), range);
@@ -85,6 +88,7 @@ export default async function TytDashboard({ searchParams }: { searchParams: Pro
       <h1 id="yks-content" tabIndex={-1} className="text-3xl font-semibold tracking-tight">TYT gelişimin</h1>
       <p className="mt-2 text-sm leading-6 text-muted">Son deneme: <Link href={`/yks27/tyt/${latest.id}`} className="text-foreground hover:underline">{latest.name}</Link> · {dateLabel(latest.date)}</p>
     </header>
+    <StudyDashboardSummary analysis={studyAnalysis} examId={latest.id} />
     <SummaryCards latest={latest} previous={previous} />
     <div className="w-full min-w-0">
       <Comparisons latest={latest} first={all[0]} />
