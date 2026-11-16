@@ -149,6 +149,8 @@ try{
     assert.equal(reads.get("exams"),1,"Only one selected-exam query");
     assert.equal(reads.get("app_sessions"),1);
     assert.match(report,/noindex/);assert.match(report,/Ders sonuçları/);assert.match(report,/Konu analizi/);
+    assert.ok(report.includes('href="#islenen-konularda-kacirilanlar"'));
+    assert.ok(report.includes('id="islenen-konularda-kacirilanlar"'));
     assert.ok(report.indexOf('id="ders-analizi"') < report.indexOf('id="siralamalar"'));
     assert.ok(report.indexOf('id="siralamalar"') < report.indexOf('id="konu-analizi"'));
     assert.doesNotMatch(report,/<details[^>]*id="siralamalar"|review-heading/);
