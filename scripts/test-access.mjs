@@ -110,7 +110,7 @@ try{
     const before=await studyRows();assert.ok(actionResult(await(await studyAction("saveStudyGroups",invalidBatch,admin)).text()).error);assert.deepEqual(await studyRows(),before);
   }
   const changed=actionResult(await(await studyAction("saveStudyGroup",studyData([firstGroup],"2020-11-12"),admin)).text());assert.ok(changed.success);assert.equal((await studyRows()).find(group=>group.group_id===firstGroup).completed_on,"2020-11-12");
-  const markedViewer=await(await get(studyPath,viewer)).text();assert.match(markedViewer,/İşlendi/);assert.ok(markedViewer.includes('datetime="2020-11-12"'));
+  const markedViewer=await(await get(studyPath,viewer)).text();assert.match(markedViewer,/İşlendi/);assert.match(markedViewer,/datetime="2020-11-12"/i);
   for(const name of ["saveStudyGroup","saveStudyGroups","clearStudyGroup"])for(const cookie of ["",viewer]){
     const before=await studyRows();const denied=await studyAction(name,studyData(),cookie);assert.ok(denied.headers.get("x-action-redirect"));assert.deepEqual(await studyRows(),before,"Unauthorized action cannot change marked groups");
   }
