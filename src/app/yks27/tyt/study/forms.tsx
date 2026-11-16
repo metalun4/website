@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { startTransition, useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { createStudyBatchFormData, studyBatchSelection } from "@/lib/topic-study-form";
 import { countExamsAroundDate, formatStudyDate, isStudyDate, type StudyExam, type StudyGroup, type StudySubject } from "@/lib/topic-study-view";
 import { clearStudyGroup, saveStudyGroup, saveStudyGroups, type StudyActionState } from "./actions";
 
@@ -54,9 +55,7 @@ function GroupEditor({ group, exams, today }: { group: StudyGroup; exams: StudyE
 export function StudySubjectForms({ subject, groups, exams, today }: { subject: StudySubject; groups: StudyGroup[]; exams: StudyExam[]; today: string }) {
   const [selected, setSelected] = useState<string[]>([]);
   const [date, setDate] = useState("");
-  const unmarked = groups.filter(group => group.completedOn === null);
-  const unmarkedIds = new Set(unmarked.map(group => group.id));
-  const currentSelection = selected.filter(id => unmarkedIds.has(id));
+  const { unmarked, groupIds: currentSelection } = studyBatchSelection(groups, selected);
   const allSelected = unmarked.length > 0 && currentSelection.length === unmarked.length;
   const [state, action, pending] = useActionState(async (previous: StudyActionState, form: FormData) => {
     try {
@@ -67,7 +66,13 @@ export function StudySubjectForms({ subject, groups, exams, today }: { subject: 
   }, {});
   const formId = `batch-${subject.id}`;
   return <>
-    {unmarked.length > 0 ? <form id={formId} action={action} className="border-b border-border bg-surface-muted p-4 sm:p-6">
+    {unmarked.length > 0 ? <form id={formId} action={action} onSubmit={event => {
+      // Returning an action error still triggers React's native form reset,
+      // which resets checked fields to their initial defaultChecked values.
+      event.preventDefault();
+      const form = createStudyBatchFormData(subject.id, currentSelection, date);
+      startTransition(() => action(form));
+    }} className="border-b border-border bg-surface-muted p-4 sm:p-6">
       <input type="hidden" name="subjectId" value={subject.id} />
       <fieldset disabled={pending} className="grid min-w-0 gap-3">
         <legend className="mb-2 font-semibold">{subject.name}: birden fazla konuya tarih ver</legend>
