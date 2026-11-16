@@ -95,7 +95,7 @@ export default async function TytDashboard({ searchParams }: { searchParams: Pro
       <section aria-labelledby="trend-heading" className="mb-7">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <h2 id="trend-heading" className="text-lg font-semibold">Net gelişimi</h2>
-          <RangeControl value={range} label="Grafik d?nemi" />
+          <RangeControl value={range} label="Grafik dönemi" />
         </div>
         <p className="mb-3 text-xs text-muted">{exams.length} / {all.length} deneme · {dateLabel(exams[0].date)} — {dateLabel(latest.date)}</p>
         <Chart
