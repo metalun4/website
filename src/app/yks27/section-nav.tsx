@@ -14,6 +14,7 @@ export function SectionNav({ admin, onNavigate }: { admin: boolean; onNavigate?:
     { href: "/yks27/tyt", label: "TYT denemeleri" },
     { href: "/yks27/tyt/dashboard", label: "Gelişim paneli" },
     { href: "/yks27/tyt/topics", label: "Konu başarısı" },
+    { href: "/yks27/tyt/study", label: "İşlenen konular" },
     { href: "/yks27/ayt", label: "AYT" },
     ...(admin ? [{ href: "/yks27/admin", label: "Yönetim" }] : []),
   ];

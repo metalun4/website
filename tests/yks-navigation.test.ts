@@ -17,3 +17,12 @@ test("untrusted return destinations cannot leave the workspace or loop through l
     assert.equal(safeReturnTo(target), "/yks27", String(target));
   }
 });
+
+test("study return path is accepted without accepting adjacent or nested paths", () => {
+  const target = "/yks27/tyt/study#ders-tyt_math";
+  assert.equal(safeReturnTo(target), target);
+  assert.equal(new URL(loginHref(target), "https://example.test").searchParams.get("returnTo"), target);
+  for (const path of ["/yks27/tyt/study/extra", "/yks27/tyt/study/", "/yks27/tyt/studies", "/yks27/study", "/yks27/admin/study"]) {
+    assert.equal(safeReturnTo(path), "/yks27", path);
+  }
+});

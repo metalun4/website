@@ -18,8 +18,7 @@ function destination(form: FormData, notice: string, hash = "") {
 }
 
 function refresh() {
-  revalidatePath("/yks27/admin/topics");
-  revalidatePath("/yks27/tyt/topics");
+  revalidatePath("/yks27", "layout");
 }
 
 async function write(path: string, args: Record<string, unknown>, form: FormData, success: string, hash: string) {

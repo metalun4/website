@@ -13,7 +13,7 @@ const { db, env } = isolated;
 const admin = randomBytes(32).toString("hex"), viewer = randomBytes(32).toString("hex");
 const hash = value => createHmac("sha256", env.SESSION_SECRET).update(value).digest("hex");
 const pin = randomUUID();
-await db.query("insert into public.viewer_pins(id,label,pin_hash,expires_at) values($1,'Yerel izleyici',$2,now()+interval '7 days')", [pin, hash("1234567890")]);
+await db.query("insert into public.viewer_pins(id,label,pin_hash,expires_at) values($1,'Yerel izleyici',$2,now()+interval '7 days')", [pin, hash("pin:1234567890")]);
 await db.query("insert into public.app_sessions(token_hash,role,pin_id,expires_at) values($1,'admin',null,now()+interval '7 days'),($2,'viewer',$3,now()+interval '7 days')", [hash(admin), hash(viewer), pin]);
 const goldens = JSON.parse(await readFile("tests/fixtures/tyt/goldens.json", "utf8"));
 const examIds = [];

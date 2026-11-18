@@ -5,10 +5,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireSession } from "@/lib/session";
 import { getTytExamDetail } from "@/lib/exams";
+import { loadStudyAnalysis } from "@/lib/topic-study";
 import { groupQuestions, groupResults, rankingLabels } from "@/lib/exam-detail";
 import { queryValue, type Query } from "@/lib/yks-navigation";
 import { dateLabel, formatPercent, number } from "../data";
 import { QuestionAnalysis } from "./question-analysis";
+import { StudyAnalysisSection } from "./study-analysis";
 
 export const metadata: Metadata = { title: "TYT Deneme Detayı | YKS 2027", description: "TYT denemesinin ders sonuçları, sıralamaları ve soru bazında konu analizi.", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -18,7 +20,10 @@ export default async function ExamPage({ params, searchParams }: { params: Promi
   const search = new URLSearchParams();
   for (const key of ["result", "subject"]) if (queryValue(query[key])) search.set(key, queryValue(query[key]));
   await requireSession(`/yks27/tyt/${examId}${search.size ? "?" + search : ""}`);
-  const exam = await getTytExamDetail(examId);
+  const [exam, studyAnalysis] = await Promise.all([
+    getTytExamDetail(examId),
+    loadStudyAnalysis(examId, true).catch(() => null),
+  ]);
   if (!exam) notFound();
   return <main className="yks-page"><div className="mx-auto max-w-7xl">
     <header className="mb-5">
@@ -28,7 +33,7 @@ export default async function ExamPage({ params, searchParams }: { params: Promi
     </header>
     <SummaryStrip label="Deneme özeti" className="yks-report-summary" items={[["Toplam net", number(exam.total_net)], ["Puan", number(exam.score)], ["Ortalama net", number(exam.average_net)]].map(([label,value],i) => ({ label, value, lead: i === 0 }))} />
     <SummaryStrip label="Yanıt dağılımı" items={[["Soru",exam.total_questions],["Doğru",exam.total_correct],["Yanlış",exam.total_wrong],["Boş",exam.total_blank]].map(([label,value]) => ({ label: String(label), value: number(value as number,0), tone: label === "Doğru" ? "correct" : label === "Yanlış" ? "incorrect" : undefined }))} />
-    <nav aria-label="Rapor bölümleri" className="yks-jump-links mb-6"><a href="#ders-analizi">Ders sonuçları</a><a href="#siralamalar">Sıralamalar</a><a href="#konu-analizi">Bu denemenin soruları</a><Link href="/yks27/tyt/topics">Denemeler arası konu başarısı</Link></nav>
+    <nav aria-label="Rapor bölümleri" className="yks-jump-links mb-6"><a href="#ders-analizi">Ders sonuçları</a><a href="#siralamalar">Sıralamalar</a><a href="#islenen-konularda-kacirilanlar">İşlediğim konularda kaçırdıklarım</a><a href="#konu-analizi">Bu denemenin soruları</a><Link href="/yks27/tyt/topics">Denemeler arası konu başarısı</Link></nav>
     <section id="ders-analizi" aria-labelledby="ders-heading" className="mt-9 scroll-mt-6">
       <h2 id="ders-heading" className="text-xl font-semibold">Ders sonuçları</h2><p className="mt-2 mb-4 text-sm leading-6 text-muted">Doğru, yanlış ve boş sayılarını ders bazında incele. Toplam satırları alt dersleri kapsar.</p>
       <div className="flex flex-col gap-3">{groupResults(exam.exam_subject_results).map(group => {
@@ -50,6 +55,7 @@ export default async function ExamPage({ params, searchParams }: { params: Promi
       const ranking = exam.exam_rankings.find(row => row.scope === scope);
       return <div key={scope} className="min-w-0 p-2"><dt className="text-sm text-muted">{label}</dt><dd className="mt-2 font-semibold tabular-nums">{ranking ? <>{number(ranking.rank, 0)}. <span className="font-normal text-muted">/ {number(ranking.participant_count, 0)} kişi</span>{ranking.participant_count > 0 && <span className="mt-2 block text-sm text-accent">Yüzdelik dilim: {formatPercent(ranking.rank / ranking.participant_count)}</span>}</> : "Veri yok"}</dd></div>;
     })}</dl></section>
+    <StudyAnalysisSection analysis={studyAnalysis} exam={exam} />
     <div className="mt-9"><QuestionAnalysis groups={groupQuestions(exam.exam_subject_results, exam.exam_questions)} /></div>
   </div></main>;
 }
